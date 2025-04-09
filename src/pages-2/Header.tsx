@@ -1,6 +1,8 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const HeaderV2 = () => {
+    const navigate = useNavigate()
   return (
     <header className="bg-white py-4 shadow-sm">
         <div className="container mx-auto px-4 flex items-center justify-between">
@@ -9,8 +11,8 @@ const HeaderV2 = () => {
               <img src="/logo-2.svg" alt="EZRA Logo" className="w-6 h-6" />
             </div>
             <nav className="ml-8 hidden md:flex space-x-6">
-              <a href="/applications" className="text-[#475467] font-semibold hover:text-blue-500">Home</a>
-              <a href="/profile" className="text-[#475467] font-semibold hover:text-blue-500">
+              <a  onClick={()=>navigate('/applications')} className="text-[#475467] cursor-pointer font-semibold hover:text-blue-500">Home</a>
+              <a onClick={()=>navigate('/profile')} className="text-[#475467] font-semibold cursor-pointer hover:text-blue-500">
                 Profile <span className="ml-1"></span>
               </a>
               {/* <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Contact Us</a> */}
