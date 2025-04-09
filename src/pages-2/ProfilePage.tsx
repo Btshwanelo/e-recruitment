@@ -525,7 +525,7 @@ const ProfilePage: React.FC = () => {
       <footer className="bg-[#0086C9] text-white w-full bottom-0 py-6 mt-4">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <img src="/logo-2.svg" alt="EZRA Logo" className="w-8 h-8" />
+            {/* <img src="/logo-2.svg" alt="EZRA Logo" className="w-8 h-8" /> */}
           </div>
           <div>
             <p className="text-sm">© 2077 EZRA. All rights reserved.</p>

@@ -7,13 +7,19 @@ const HeaderV2 = () => {
     <header className="bg-white py-4 shadow-sm">
         <div className="container mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center">
-            <div className="w-20 h-20 rounded flex items-center justify-center">
-              <img src="/logo-2.svg" alt="EZRA Logo" className="w-6 h-6" />
+            <div className="w-20 h-14 rounded flex items-center justify-center">
+              <img src="pic-logo-small.png" alt="EZRA Logo" className="w-24 h-auto" />
             </div>
             <nav className="ml-8 hidden md:flex space-x-6">
-              <a  onClick={()=>navigate('/applications')} className="text-[#475467] cursor-pointer font-semibold hover:text-blue-500">Home</a>
+              {/* <a  onClick={()=>navigate('/applications')} className="text-[#475467] cursor-pointer font-semibold hover:text-blue-500">Home</a> */}
               <a onClick={()=>navigate('/profile')} className="text-[#475467] font-semibold cursor-pointer hover:text-blue-500">
                 Profile <span className="ml-1"></span>
+              </a>
+              <a onClick={()=>navigate('/jobs')} className="text-[#475467] font-semibold cursor-pointer hover:text-blue-500">
+                Jobs <span className="ml-1"></span>
+              </a>
+              <a onClick={()=>navigate('/applications')} className="text-[#475467] font-semibold cursor-pointer hover:text-blue-500">
+                Applications <span className="ml-1"></span>
               </a>
               {/* <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Contact Us</a> */}
             </nav>
