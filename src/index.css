@@ -1,0 +1,60 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Inter'); */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 200 100% 95%;
+    --foreground: 200 5% 0%;
+    --card: 200 50% 90%;
+    --card-foreground: 200 5% 10%;
+    --popover: 200 100% 95%;
+    --popover-foreground: 200 100% 0%;
+    --primary: 200 100% 39.4%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 30% 70%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 162 30% 85%;
+    --muted-foreground: 200 5% 35%;
+    --accent: 162 30% 80%;
+    --accent-foreground: 200 5% 10%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 200 5% 90%;
+    --border: 200 30% 50%;
+    --input: 200 30% 18%;
+    --ring: 200 100% 39.4%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 200 50% 5%;
+    --foreground: 200 5% 90%;
+    --card: 200 50% 0%;
+    --card-foreground: 200 5% 90%;
+    --popover: 200 50% 5%;
+    --popover-foreground: 200 5% 90%;
+    --primary: 200 100% 39.4%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 30% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 162 30% 15%;
+    --muted-foreground: 200 5% 60%;
+    --accent: 162 30% 15%;
+    --accent-foreground: 200 5% 90%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 200 5% 90%;
+    --border: 200 30% 18%;
+    --input: 200 30% 18%;
+    --ring: 200 100% 39.4%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
