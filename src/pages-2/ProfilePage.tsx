@@ -104,8 +104,8 @@ const ProfilePage: React.FC = () => {
     setActiveTab("personal");
   };
 
-  const handleSaveSubscription = (data) => {
-    console.log('Subscription data:', data);
+  const handleSaveSubscription = () => {
+    // console.log('Subscription data:', data);
 
     setActiveTab("personal");
     // Process subscription data

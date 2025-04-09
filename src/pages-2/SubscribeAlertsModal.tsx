@@ -35,11 +35,11 @@ const SubscribeAlertsModal: React.FC<SubscribeAlertsModalProps> = ({
   };
 
   const handleSave = () => {
-    if (email.trim() === "" || !isValid) {
-      setIsValid(false);
-      return;
-    }
-    onSave({ email, emailNotifications });
+    // if (email.trim() === "" || !isValid) {
+    //   setIsValid(false);
+    //   return;
+    // }
+    // onSave({ email, emailNotifications });
     onClose();
   };
 
