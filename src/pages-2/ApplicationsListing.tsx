@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { ArrowDown, ArrowLeft, ArrowRight, HelpCircle, MoreVertical, SlidersHorizontal } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HeaderV2 from "./Header";
 
 // Job type definition
@@ -36,6 +36,8 @@ interface Job {
 
 const ApplicationsListing: React.FC = () => {
   // Sample job data
+
+  const navigate = useNavigate()
   const jobs: Job[] = [
     {
       id: "1",
@@ -132,7 +134,7 @@ const ApplicationsListing: React.FC = () => {
           <CardContent className="p-0">
             <div className="p-4 border-b border-gray-300 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Job Openings</h2>
-                <Button className="bg-blue-500 hover:bg-[#578CE5] rounded-lg">
+                <Button className="bg-blue-500 hover:bg-[#578CE5] rounded-lg" onClick={()=> navigate('/jobs')} >
                           +  Apply for a job
                           </Button>
               {/* <span className="text-sm text-[#2B6EDF] rounded-full border px-2 font-medium border-[#DCE7FA]">100 Jobs</span> */}
