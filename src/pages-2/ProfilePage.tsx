@@ -19,6 +19,7 @@ import { Check, CircleUser, Upload, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProgressStepsProgressIconsCentered from "@/components/ProgressStepsProgressIconsCentered";
 import HeaderV2 from "./Header";
+import SubscribeAlertsModal from "./SubscribeAlertsModal";
 
 // Form data interfaces
 interface ProfileFormData {
@@ -48,27 +49,27 @@ interface CVFormData {
 
 // Dummy data
 const dummyPersonalInfo: ProfileFormData = {
-  firstName: "John",
-  initial: "A",
-  title: "mr",
-  lastName: "Smith",
+  firstName: "Zizipho",
+  initial: "ZN",
+  title: "Mrs",
+  lastName: "Nceku",
   idNumber: "9001016281082",
   age: "33",
-  race: "White",
+  race: "black",
   dateOfBirth: "1990-01-01",
-  gender: "Male",
+  gender: "Female",
   passportNumber: "AB123456",
   rightToWork: "South African Citizen"
 };
 
 const dummyContactInfo: ContactFormData = {
-  email: "john.smith@example.com",
+  email: "zizipho.nceku@example.com",
   mobileNumber: "082 123 4567",
   alternativeNumber: "011 555 1234"
 };
 
 const dummyCVInfo: CVFormData = {
-  cvFile: "John_Smith_CV.pdf",
+  cvFile: "zizipho_nceku_CV.pdf",
   documents: ["ID_Document.pdf", "Qualification_Certificate.pdf", "Reference_Letter.pdf"]
 };
 
@@ -90,6 +91,24 @@ const ProfilePage: React.FC = () => {
 
   const handleTitleChange = (value: string) => {
     setPersonalFormData((prev) => ({ ...prev, title: value }));
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setActiveTab("personal");
+  };
+
+  const handleSaveSubscription = (data) => {
+    console.log('Subscription data:', data);
+
+    setActiveTab("personal");
+    // Process subscription data
   };
 
   // Contact Info handlers
@@ -188,6 +207,13 @@ const ProfilePage: React.FC = () => {
               >
                 Manage My CV
               </a>
+              <a 
+                href="#" 
+                onClick={(e) => { e.preventDefault(); setActiveTab("alerts"); }}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === "alerts" ? "text-[#2B6EDF] bg-[#F6F9FE]" : "text-gray-600 hover:text-blue-500"}`}
+              >
+                Subscribe to Alerts
+              </a>
             </div>
           </div>
 
@@ -195,6 +221,12 @@ const ProfilePage: React.FC = () => {
           <div className="flex-1 mb-20 rounded-lg">
             <Card className="bg-white border-none rounded-lg shadow-none">
               <CardContent className="pt-6 rounded-lg">
+              <SubscribeAlertsModal
+        isOpen={activeTab === "alerts"}
+        onClose={handleCloseModal}
+        onSave={handleSaveSubscription}
+      />
+                
                 {/* Personal Info Tab */}
                 {activeTab === "personal" && (
                   <>
