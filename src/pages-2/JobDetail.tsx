@@ -45,7 +45,8 @@ const JobDetailPage: React.FC = () => {
     });
     
     // Redirect to /applications
-    window.location.href = '/applications';
+    // window.location.href = '/applications';
+    navigate('/applications')
   };
 
   return (
