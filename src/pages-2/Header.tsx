@@ -10,13 +10,10 @@ const HeaderV2 = () => {
             </div>
             <nav className="ml-8 hidden md:flex space-x-6">
               <a href="/applications" className="text-[#475467] font-semibold hover:text-blue-500">Home</a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">
-                EZRA Jobs <span className="ml-1"></span>
+              <a href="/profile" className="text-[#475467] font-semibold hover:text-blue-500">
+                Profile <span className="ml-1"></span>
               </a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">
-                EZRA News <span className="ml-1"></span>
-              </a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Contact Us</a>
+              {/* <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Contact Us</a> */}
             </nav>
           </div>
         </div>

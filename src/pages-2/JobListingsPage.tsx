@@ -39,26 +39,13 @@ const JobListingsPage: React.FC = () => {
   // Sample job data
   const jobs: Job[] = [
     {
-      id: "1",
-      name: "Admin Staff",
-      department: "Admin",
-      employmentType: "Full - time",
-      expiryDate: "9/2/2023"
-    },
-    {
-      id: "2",
-      name: "Accounts Admin",
-      department: "Accounts",
-      employmentType: "Contract",
-      expiryDate: "8/2/2023"
-    },
-    {
-      id: "3",
-      name: "EZRA Trainee program",
-      department: "National",
-      employmentType: "Active",
-      expiryDate: "11/15/2023"
-    }
+        id: "1",
+        name:  "Analyst: Operational Risk Management",
+        department: "Admin",
+        employmentType: "Full - time",
+        expiryDate: "9/5/2025"
+      },
+ 
   ];
 
   return (

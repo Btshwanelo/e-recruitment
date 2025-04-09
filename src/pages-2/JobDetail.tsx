@@ -6,7 +6,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Briefcase, DollarSign, X } from "lucide-react";
+import { Calendar, Clock, Briefcase, DollarSign, X, Building, MapPin } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -44,33 +44,11 @@ const JobDetailPage: React.FC = () => {
       isEmployed
     });
     
-    // Redirect to /applications
-    // window.location.href = '/applications';
     navigate('/applications')
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      {/* <header className="bg-[#F2F4F7] py-4 shadow-sm">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-20 h-20 rounded flex items-center justify-center">
-              <img src="/logo-2.svg" alt="EZRA Logo" className="w-6 h-6" />
-            </div>
-            <nav className="ml-8 hidden md:flex space-x-6">
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Home</a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">
-                EZRA Jobs <span className="ml-1"></span>
-              </a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">
-                EZRA News <span className="ml-1"></span>
-              </a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Contact Us</a>
-            </nav>
-          </div>
-        </div>
-      </header> */}
       <HeaderV2 />
 
       <div className="container mx-auto px-4 py-8">
@@ -86,7 +64,7 @@ const JobDetailPage: React.FC = () => {
 
         {/* Job Title Section */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-8">Prototype Designer</h1>
+          <h1 className="text-3xl font-bold mb-8">Analyst: Operational Risk Management</h1>
           
           <div className="flex flex-wrap gap-2 mb-8">
             <Button variant="outline" className="bg-white border border-[#D0D5DD]">
@@ -103,31 +81,39 @@ const JobDetailPage: React.FC = () => {
           <div className="flex flex-wrap gap-6 mt-8">
             <div className="flex items-center text-gray-700">
                 <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                    
-              <Briefcase className="w-5 h-5  text-[#0086C9]" />
+                  <Briefcase className="w-5 h-5 text-[#0086C9]" />
                 </div>
               <span className="text-lg font-semibold">Permanent</span>
             </div>
             <div className="flex items-center text-gray-700">
-            <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-
-              <Clock className="w-5 h-5  text-[#0086C9]" />
-                </div>
+              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                <Clock className="w-5 h-5 text-[#0086C9]" />
+              </div>
               <span className="text-lg font-semibold">Full Time</span>
             </div>
             <div className="flex items-center text-gray-700">
-            <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-
-              <Calendar className="w-5 h-5  text-[#0086C9]" />
-                </div>
-              <span className="text-lg font-semibold">Closes: 30 April 2025</span>
+              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                <Calendar className="w-5 h-5 text-[#0086C9]" />
+              </div>
+              <span className="text-lg font-semibold">Closes: 25 April 2024</span>
             </div>
             <div className="flex items-center text-gray-700">
-            <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-
-              <DollarSign className="w-5 h-5  text-[#0086C9]" />
-                </div>
-              <span className="text-lg font-semibold">R 35 000 - R 40 000</span>
+              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                <DollarSign className="w-5 h-5 text-[#0086C9]" />
+              </div>
+              <span className="text-lg font-semibold">Negotiable</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                <MapPin className="w-5 h-5 text-[#0086C9]" />
+              </div>
+              <span className="text-lg font-semibold">Pretoria</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                <Building className="w-5 h-5 text-[#0086C9]" />
+              </div>
+              <span className="text-lg font-semibold">Grade: D1-D5</span>
             </div>
           </div>
         </div>
@@ -139,98 +125,90 @@ const JobDetailPage: React.FC = () => {
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]"/>
             <div className="text-gray-900 space-y-4">
               <p>
-                The Prototype Designer for Case Goods is responsible for ensuring the creation and accuracy of jigs and tools for the prototype and
-                production process of case goods. This includes maintaining and updating existing jigs to ensure they are up-to-date and accurate, as
-                well as designing and fabricating new jigs to support the prototype frame making process. The role focuses on improving production
-                quality and efficiency by developing innovative jigs and techniques.
+                <strong>19 April 2024</strong>
               </p>
               <p>
-                Key responsibilities also include providing technical support to the machine shop, utilizing 3D CAD software for designing and
-                modelling prototypes, and programming CNC machines for precise wood working and fabrication. The position requires collaboration
-                with various departments to optimize production timelines while maintaining high-quality standards in the manufacturing of case
-                goods.
+                The Public Investment Corporation (PIC) invests funds on behalf of public sector entities including the Government Employees Pension Fund. The organisation is the largest investment manager in the country and the continent. Applications are invited from dynamic individuals for the following challenging position:
+              </p>
+              <p>
+                <strong>Position:</strong> Analyst: Operational Risk Management<br />
+                <strong>Job Grade:</strong> D1 – D5<br />
+                <strong>(Ref: AORM001)</strong>
+              </p>
+              <p>
+                <strong>Salary:</strong> All-inclusive remuneration package negotiable<br />
+                <strong>Centre:</strong> Public Investment Corporation, Pretoria
               </p>
             </div>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-4">Duties & Responsibility</h2>
+            <h2 className="text-lg font-semibold mb-4">Requirements</h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]"/>
             <ul className="list-disc pl-6 space-y-2 text-gray-900">
-              <li>
-                <span className="font-medium">Jig Design & Fabrication:</span> Indepth knowledge of designing, fabricating, and maintaining jigs for prototype and production processes. 
-                Ability to modify and update existing jigs for improved accuracy and performance.
-              </li>
-              <li>
-                <span className="font-medium">Woodworking Techniques:</span> Strong understanding of woodworking principles, tools, and materials used in case goods manufacturing. 
-                Experience with various woodworking techniques, including cutting, shaping, and finishing wood components.
-              </li>
-              <li>
-                <span className="font-medium">3D CAD Software Proficiency:</span> Expertise in using 3D CAD software (such as AutoCAD, Inventor or similar) for designing prototypes, 
-                jigs, and components. Ability to create detailed drawings, models, and assemblies for production and prototyping.
-              </li>
-              <li>
-                <span className="font-medium">CNC Programming & Operation:</span> Knowledge of CNC machine programming, including Gcode and other CNC-related software. 
-                Experience setting up and operating CNC machines for accurate wood part fabrication.
-              </li>
-              <li>
-                <span className="font-medium">Manufacturing Process Optimization:</span> Understanding of production workflows, and ability to design jigs that enhance both quality 
-                and speed of manufacturing. Ability to identify areas for improvement in the production process, suggesting and implementing 
-                changes for better efficiency.
-              </li>
-              <li>
-                <span className="font-medium">Technical Support & Collaboration:</span> Strong technical support skills to assist the machine shop and production team in 
-                troubleshooting and resolving issues. Ability to collaborate effectively with different teams, including engineers, machinists, and 
-                production staff, to ensure smooth operations.
-              </li>
-              <li>
-                <span className="font-medium">Material Knowledge:</span> Familiarity with various materials used in case goods, including different types of wood.
-              </li>
+              <li>Relevant degree in Risk or Audit or equivalent relevant qualification</li>
+              <li>Sound understanding of operational risk management principles</li>
+              <li>Financial services industry knowledge and experience (Preferably Asset Management)</li>
+              <li>A good understanding of the key areas of the organization</li>
+              <li>2 - 4 Years relevant experience</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">Desired Experience & Qualification</h2>
+            <h2 className="text-lg font-semibold mb-4">Duties & Responsibilities</h2>
+            <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]"/>
+            <ul className="list-disc pl-6 space-y-2 text-gray-900">
+              <li>Conduct day-to-day operational risk activities in terms of the Operational Risk Management Framework (ORMF) and related frameworks, policies, and procedures</li>
+              <li>Assist the Senior Manager: Operational Risk in the identification, assessment, responses, and monitoring of Operational Risk in the PIC</li>
+              <li>Co-ordinate the risk analysis activities of the PIC Business Units, including both listed and unlisted investments</li>
+              <li>Work with Compliance, Internal & External Audit functions and other Assurance Providers to direct their efforts towards reviewing controls that mitigate the identified risks across the organization</li>
+              <li>Support process of identifying and reporting risk incidents and assist in the design of risk mitigation and control procedures within PIC</li>
+              <li>Support process of identifying and reporting issues and actions within PIC</li>
+              <li>Conduct control environment assessments for the organization</li>
+              <li>Conduct, implement and assess key risk indicators</li>
+              <li>Assist the ORM Department with reporting to various governance structures</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold mb-3">Competencies and Skills</h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]"/>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
-              <li>
-                <span className="font-medium">Prototyping & Jig Design Experience:</span> Minimum 3.5 years of experience in designing, fabricating, and maintaining jigs for prototype 
-                or production environments. Hands-on experience with creating and improving jigs and fixtures to support the production of case 
-                goods or similar products.
-              </li>
-              <li>
-                <span className="font-medium">Woodworking & Manufacturing:</span> 3.5 years of experience in woodworking, with a strong focus on case goods or furniture 
-                manufacturing. Proven experience working with wood, laminates, veneers, and other materials commonly used in the industry.
-              </li>
-              <li>
-                <span className="font-medium">CAD Design & 3D Modelling:</span> 3+ years of experience using 3D CAD software (such as Inventor, AutoCAD, or similar) for product and 
-                prototype design, including creating detailed drawings and assembly models.
-              </li>
-              <li>
-                <span className="font-medium">CNC Programming & Machine Operation:</span> At least 2.5 years of experience in CNC machine programming (G-code or equivalent) and 
-                operation, specifically in woodworking or case goods production.
-              </li>
-              <li>
-                <span className="font-medium">Production Process Improvement:</span> Proven track record of identifying and implementing process improvements to increase 
-                production efficiency, quality, and timeframes.
-              </li>
-              <li>
-                <span className="font-medium">Technical Support & Collaboration:</span> Experience providing technical support to manufacturing teams (e.g., machine shops, production) 
-                and collaborating with cross-functional teams to resolve issues.
-              </li>
-              <li>
-                <span className="font-medium">Quality Control & Testing:</span> Experience in quality control processes, ensuring prototypes and production parts meet both design 
-                specifications and functional requirements.
-              </li>
-              <li>
-                <span className="font-medium">Project Management & ProblemSolving:</span> Strong project management skills with the ability to manage multiple tasks and a small 
-                team, prioritize, and meet deadlines. Experience solving complex production or design-related problems with innovative solutions.
-              </li>
-              <li>
-                <span className="font-medium">Industry-Specific Knowledge:</span> Experience in the case goods or furniture manufacturing industry is preferred, with a deep understanding 
-                of materials, design, and fabrication techniques.
-              </li>
+              <li>Problem-solving skills</li>
+              <li>Attention to detail</li>
+              <li>Good communication skills both verbal and written</li>
+              <li>Knowledge of compliance, risk, and financial management</li>
+              <li>Knowledge of financial markets - capital, money, equity, foreign exchange, and financial derivatives</li>
+              <li>Knowledge of insurance coverage, industry standards</li>
+              <li>Knowledge of the ISO 31000 standards, Basel Operational Risk principles, COSO risk governance principles, corporate governance principles e.g., King IV</li>
+              <li>Knowledge of (ORX) Operational Risk Reporting Standards</li>
+              <li>Knowledge of enterprise risk management principles</li>
             </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold mb-3">Additional Information</h2>
+            <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]"/>
+            <div className="text-gray-900 space-y-4">
+              <p>
+                With the PIC having topped the R2,6 trillion mark in assets under management and in the process of entering the global investment market, it is the best asset manager any serious professional would want to be associated with. It is also one of the better places from which one can serve South Africa.
+              </p>
+              <p>
+                PIC is an equal opportunities employer and as such appointments will be in line with the PIC Employment Equity plan.
+              </p>
+              <p>
+                <strong>Closing Date: 25 April 2024</strong>
+              </p>
+              <p>
+                Please email a copy of your comprehensive CV to Recruitment4@pic.gov.za
+              </p>
+              <p>
+                <em>* Grade range is from D1 – D5 commensurate with applicable minimum requirements.</em>
+              </p>
+              <p>
+                <strong>Privacy Notice:</strong> By submitting your job application, you consent to PIC's processing of your personal information for the purposes of assessing your job application. PIC will process your Personal Information in accordance with applicable laws and the PIC Privacy Policy available here (www.pic.gov.za). You are free to withdraw your consent at any time, after which, PIC may no longer be able consider your job application.
+              </p>
+            </div>
           </section>
 
           <div className="flex justify-between pt-4">
@@ -252,9 +230,6 @@ const JobDetailPage: React.FC = () => {
         <DialogContent className="sm:max-w-md bg-white">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold ">Complete Your Application</DialogTitle>
-            {/* <DialogDescription>
-              Please provide the following information to complete your application for the Prototype Designer position.
-            </DialogDescription> */}
           </DialogHeader>
           
           <div className="space-y-6 py-4">
@@ -311,7 +286,7 @@ const JobDetailPage: React.FC = () => {
       </Dialog>
 
       {/* Footer */}
-      <footer className="bg-[#0086C9] text-white  w-full bottom-0 py-6 mt-10">
+      <footer className="bg-[#0086C9] text-white w-full bottom-0 py-6 mt-10">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <img src="/logo-2.svg" alt="EZRA Logo" className="w-8 h-8" />
