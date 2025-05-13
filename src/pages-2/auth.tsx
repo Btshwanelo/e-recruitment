@@ -98,7 +98,7 @@ const AuthPageV2 = () => {
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
       {/* Logo */}
       <div className="mb-2">
-        <img src="/images/Logo.svg" alt="RHS Services Logo" className="h-20" />
+        <img src="/pic-logo-small.png" alt="RHS Services Logo" className="h-20" />
       </div>
 
       <div className="w-full max-w-md">
