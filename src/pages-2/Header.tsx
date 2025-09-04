@@ -11,17 +11,17 @@ const HeaderV2 = () => {
             <img src="/dcs-logo.png" alt="EZRA Logo" className="w-24 h-auto" />
           </div>
           <nav className="ml-8 hidden md:flex space-x-6">
-            {/* <a  onClick={()=>navigate('/applications')} className="text-[#475467] cursor-pointer font-semibold hover:text-blue-500">Home</a> */}
-            <a onClick={() => navigate('/profile')} className="text-[#475467] font-semibold cursor-pointer hover:text-blue-500">
+            {/* <a  onClick={()=>navigate('/applications')} className="text-[#475467] cursor-pointer font-semibold hover:text-[#]">Home</a> */}
+            <a onClick={() => navigate('/profile')} className="text-[#475467] font-semibold cursor-pointer hover:text-[#005f33]">
               Profile <span className="ml-1"></span>
             </a>
-            <a onClick={() => navigate('/jobs')} className="text-[#475467] font-semibold cursor-pointer hover:text-blue-500">
+            <a onClick={() => navigate('/jobs')} className="text-[#475467] font-semibold cursor-pointer hover:text-[#005f33]">
               Jobs <span className="ml-1"></span>
             </a>
-            <a onClick={() => navigate('/applications')} className="text-[#475467] font-semibold cursor-pointer hover:text-blue-500">
+            <a onClick={() => navigate('/applications')} className="text-[#475467] font-semibold cursor-pointer hover:text-[#005f33]">
               Applications <span className="ml-1"></span>
             </a>
-            {/* <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Contact Us</a> */}
+            {/* <a href="#" className="text-[#475467] font-semibold hover:text-[#]">Contact Us</a> */}
           </nav>
         </div>
       </div>

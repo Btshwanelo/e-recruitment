@@ -3,6 +3,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer from '@/slices/authSlice';
 import profileReducer from '@/slices/detailsSlice';
+import jobsReducer from '@/slices/jobsSlice';
 import loanReducer from '@/slices/loanSlice';
 import applicationReducer from '@/slices/applicationSlice';
 import { apiSlice } from '@/slices/apiSlice';
@@ -10,6 +11,7 @@ import { apiSlice } from '@/slices/apiSlice';
 const rootReducer = combineReducers({
   auth: authReducer,
   profile: profileReducer,
+  jobs: jobsReducer,
   loan: loanReducer,
   appliaction: applicationReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
@@ -19,7 +21,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'profile', 'loan','appliaction'],
+  whitelist: ['auth', 'profile', 'loan', 'appliaction'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

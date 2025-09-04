@@ -10,6 +10,7 @@ import ProgressStepsProgressIconsCentered from '@/components/ProgressStepsProgre
 import HeaderV2 from './Header';
 import SubscribeAlertsModal from './SubscribeAlertsModal';
 import { useNavigate } from 'react-router-dom';
+import Footer from '@/components/Footer';
 
 // Form data interfaces
 interface ProfileFormData {
@@ -141,14 +142,14 @@ const ProfilePage: React.FC = () => {
               <img src="/logo-2.svg" alt="EZRA Logo" className="w-6 h-6" />
             </div>
             <nav className="ml-8 hidden md:flex space-x-6">
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Home</a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">
+              <a href="#" className="text-[#475467] font-semibold ">Home</a>
+              <a href="#" className="text-[#475467] font-semibold ">
                 EZRA Jobs <span className="ml-1"></span>
               </a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">
+              <a href="#" className="text-[#475467] font-semibold ">
                 EZRA News <span className="ml-1"></span>
               </a>
-              <a href="#" className="text-[#475467] font-semibold hover:text-blue-500">Contact Us</a>
+              <a href="#" className="text-[#475467] font-semibold ">Contact Us</a>
             </nav>
           </div>
         </div>
@@ -182,7 +183,7 @@ const ProfilePage: React.FC = () => {
                   e.preventDefault();
                   setActiveTab('personal');
                 }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'personal' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'personal' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
               >
                 Personal Info
               </a>
@@ -192,7 +193,7 @@ const ProfilePage: React.FC = () => {
                   e.preventDefault();
                   setActiveTab('contact');
                 }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'contact' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'contact' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
               >
                 Contact Info
               </a>
@@ -202,7 +203,7 @@ const ProfilePage: React.FC = () => {
                   e.preventDefault();
                   setActiveTab('cv');
                 }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'cv' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'cv' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
               >
                 Manage My CV
               </a>
@@ -212,7 +213,7 @@ const ProfilePage: React.FC = () => {
                   e.preventDefault();
                   setActiveTab('alerts');
                 }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'alerts' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'alerts' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
               >
                 Subscribe to Alerts
               </a>
@@ -241,6 +242,21 @@ const ProfilePage: React.FC = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
+                          <Label htmlFor="title">Title</Label>
+                          <Select value={personalFormData.title} onValueChange={handleTitleChange}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a title" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="mr">Mr.</SelectItem>
+                              <SelectItem value="mrs">Mrs.</SelectItem>
+                              <SelectItem value="ms">Ms.</SelectItem>
+                              <SelectItem value="dr">Dr.</SelectItem>
+                              <SelectItem value="prof">Prof.</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
                           <Label htmlFor="firstName">First name(s)</Label>
                           <Input
                             id="firstName"
@@ -260,21 +276,7 @@ const ProfilePage: React.FC = () => {
                             className="w-full"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="title">Title</Label>
-                          <Select value={personalFormData.title} onValueChange={handleTitleChange}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a title" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="mr">Mr.</SelectItem>
-                              <SelectItem value="mrs">Mrs.</SelectItem>
-                              <SelectItem value="ms">Ms.</SelectItem>
-                              <SelectItem value="dr">Dr.</SelectItem>
-                              <SelectItem value="prof">Prof.</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last name</Label>
                           <Input
@@ -348,10 +350,10 @@ const ProfilePage: React.FC = () => {
                       </div>
 
                       <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300">
-                        <Button variant="outline" type="button" className="bg-white border border-[#0086C9] text-[#0086C9] w-[180px]">
+                        <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                           Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#0086C9] w-[180px] hover:bg-[#0086C9]">
+                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
                           Save
                         </Button>
                       </div>
@@ -405,10 +407,10 @@ const ProfilePage: React.FC = () => {
                       </div>
 
                       <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300">
-                        <Button variant="outline" type="button" className="bg-white border border-[#0086C9] text-[#0086C9] w-[180px]">
+                        <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                           Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#0086C9] w-[180px] hover:bg-[#0086C9]">
+                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
                           Save
                         </Button>
                       </div>
@@ -449,7 +451,7 @@ const ProfilePage: React.FC = () => {
                             <h3 className="text-lg font-medium mb-2">Upload CV</h3>
                             <p className="text-sm text-gray-500 mb-4">Drag and drop your CV file here, or click to browse</p>
                             <p className="text-xs text-gray-400 mb-4">Supported formats: PDF, DOC, DOCX (Max size: 5MB)</p>
-                            <Button onClick={handleFileUpload} className="bg-[#0086C9] hover:bg-[#0086C9]">
+                            <Button onClick={handleFileUpload} className="bg-[#005f33] hover:bg-[#005f33]">
                               Browse Files
                             </Button>
                           </div>
@@ -459,7 +461,7 @@ const ProfilePage: React.FC = () => {
                           <div className="mt-6 p-4 border border-gray-200 rounded-lg">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
-                                <FileText className="h-6 w-6 mr-2 text-[#0086C9]" />
+                                <FileText className="h-6 w-6 mr-2 text-[#005f33]" />
                                 <div>
                                   <p className="font-medium">{cvFormData.cvFile}</p>
                                   <p className="text-xs text-gray-500">Uploaded on April 8, 2025</p>
@@ -484,7 +486,7 @@ const ProfilePage: React.FC = () => {
                             <h3 className="text-lg font-medium mb-2">Upload Documents</h3>
                             <p className="text-sm text-gray-500 mb-4">Drag and drop your documents here, or click to browse</p>
                             <p className="text-xs text-gray-400 mb-4">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max size: 10MB)</p>
-                            <Button onClick={handleFileUpload} className="bg-[#0086C9] hover:bg-[#0086C9]">
+                            <Button onClick={handleFileUpload} className="bg-[#005f33] hover:bg-[#005f33]">
                               Browse Files
                             </Button>
                           </div>
@@ -497,7 +499,7 @@ const ProfilePage: React.FC = () => {
                               <div key={index} className="p-4 border border-gray-200 rounded-lg">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
-                                    <FileText className="h-6 w-6 mr-2 text-[#0086C9]" />
+                                    <FileText className="h-6 w-6 mr-2 text-[#005f33]" />
                                     <div>
                                       <p className="font-medium">{doc}</p>
                                       <p className="text-xs text-gray-500">Uploaded on April 8, 2025</p>
@@ -519,10 +521,10 @@ const ProfilePage: React.FC = () => {
                     </Tabs>
 
                     <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300">
-                      <Button variant="outline" type="button" className="bg-white border border-[#0086C9] text-[#0086C9] w-[180px]">
+                      <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                         Cancel
                       </Button>
-                      <Button onClick={handleSubmit} className="bg-[#0086C9] w-[180px] hover:bg-[#0086C9]">
+                      <Button onClick={handleSubmit} className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
                         Save
                       </Button>
                     </div>
@@ -535,14 +537,7 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#0086C9] text-white w-full bottom-0 py-6 mt-4">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">{/* <img src="/logo-2.svg" alt="EZRA Logo" className="w-8 h-8" /> */}</div>
-          <div>
-            <p className="text-sm">© 2077 EZRA. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

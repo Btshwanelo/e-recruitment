@@ -37,6 +37,7 @@ import JobListingsPage from './pages-2/JobListingsPage';
 import ApplicationsListing from './pages-2/ApplicationsListing';
 import AuthPageV2 from './pages-2/auth';
 import OTPVerificationRoutes from './pages-2/Verification';
+import AppliedJob from './pages-2/AppliedJob';
 
 function App() {
   return (
@@ -44,12 +45,13 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<AuthPageV2 />} />
-        <Route path="/verification" element={<OTPNotification  />} />
-        <Route path="/verification/enter-otp" element={<OTPInput   />} />
-        <Route path="/verification/success" element={<VerificationSuccess   />} />
+        <Route path="/verification" element={<OTPNotification />} />
+        <Route path="/verification/enter-otp" element={<OTPInput />} />
+        <Route path="/verification/success" element={<VerificationSuccess />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/applications" element={<ApplicationsListing />} />
         <Route path="/jobs/:id" element={<JobDetailPage />} />
+        <Route path="/application/jobs/:id" element={<AppliedJob />} />
         <Route path="/jobs" element={<JobListingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

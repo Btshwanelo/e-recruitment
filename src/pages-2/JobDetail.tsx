@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Briefcase, DollarSign, X, Building, MapPin, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Briefcase, DollarSign, X, Building, MapPin, CheckCircle, GraduationCap, Heart } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import { selectJobById, selectHasApplied, selectApplicationByJobId, addApplication, toggleFavorite } from '@/slices/jobsSlice';
 import HeaderV2 from './Header';
+import Footer from '@/components/Footer';
 
 const JobDetailPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,11 +19,33 @@ const JobDetailPage: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock navigate function
-  const navigate = (path: string) => {
-    console.log(`Navigating to: ${path}`);
-    // In a real app, this would use react-router-dom's useNavigate
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { id: jobId } = useParams<{ id: string }>();
+
+  // Get job data from Redux store
+  const job = useSelector((state: any) => selectJobById(state, jobId || ''));
+  const hasApplied = useSelector((state: any) => selectHasApplied(state, jobId || ''));
+  const application = useSelector((state: any) => selectApplicationByJobId(state, jobId || ''));
+
+  useEffect(() => {
+    if (!job && jobId) {
+      navigate('/jobs');
+    }
+  }, [job, jobId, navigate]);
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h2>
+          <Button onClick={() => navigate('/jobs')} className="bg-[#0086C9] hover:bg-[#0086C9]">
+            Back to Jobs
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const handleApply = () => {
     setIsModalOpen(true);
@@ -28,13 +54,26 @@ const JobDetailPage: React.FC = () => {
   const handleSubmitApplication = async () => {
     setIsSubmitting(true);
 
-    console.log('Application submitted with:', {
-      educationLevel,
-      isEmployed,
-    });
-
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Create application
+    const newApplication = {
+      id: `app_${Date.now()}`,
+      jobId: job.id,
+      jobTitle: job.title,
+      company: job.company,
+      appliedDate: new Date().toISOString().split('T')[0],
+      status: 'submitted' as const,
+      educationLevel,
+      isEmployed: isEmployed || '',
+      applicationData: {
+        educationLevel,
+        isEmployed: isEmployed || '',
+      },
+    };
+
+    dispatch(addApplication(newApplication));
 
     setIsSubmitting(false);
     setShowSuccess(true);
@@ -53,6 +92,30 @@ const JobDetailPage: React.FC = () => {
     setIsSubmitting(false);
   };
 
+  const handleToggleFavorite = () => {
+    dispatch(toggleFavorite(job.id));
+  };
+
+  const handleViewApplication = () => {
+    navigate('/applications');
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  // Get appropriate icon based on job type
+  const getJobTypeIcon = () => {
+    return job.type === 'Learnership' ? GraduationCap : Briefcase;
+  };
+
+  const JobTypeIcon = getJobTypeIcon();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <HeaderV2 />
@@ -64,185 +127,164 @@ const JobDetailPage: React.FC = () => {
           style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
         >
           <CardHeader>
-            <CardTitle className="text-4xl font-bold">Applying for a vacancy</CardTitle>
+            <CardTitle className="text-4xl font-bold">{hasApplied ? 'Applied Position Details' : 'Job Details'}</CardTitle>
           </CardHeader>
         </Card>
 
         {/* Job Title Section */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-8">Analyst: Operational Risk Management</h1>
+          <h1 className="text-3xl font-bold mb-4">{job.title}</h1>
+
+          {/* Applied Status Banner */}
+          {hasApplied && application && (
+            <div className="bg-green-50 border border-green-200 rounded-lg py-1 px-4  mb-8">
+              <div className="flex items-center">
+                <div>
+                  <h3 className="text-lg font-semibold text-green-800">Application Submitted</h3>
+                  <p className="text-green-700">
+                    You applied for this position on {formatDate(application.appliedDate)} - Status:{' '}
+                    <span className="font-medium capitalize">{application.status.replace('_', ' ')}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-2 mb-8">
-            <Button variant="outline" className="bg-white border border-[#D0D5DD]">
-              Save to Favorite
+            <Button
+              variant="outline"
+              className={`bg-white border border-[#D0D5DD] ${job.isFavorite ? 'text-red-600' : ''}`}
+              onClick={handleToggleFavorite}
+            >
+              <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600' : ''}`} />
+              {job.isFavorite ? 'Remove from Favorites' : 'Save to Favorites'}
             </Button>
-            <Button className="bg-blue-500 hover:bg-[#578CE5] rounded-lg" onClick={handleApply}>
-              Apply Now
-            </Button>
+
+            {!hasApplied ? (
+              <Button className="bg-[#005f33]" onClick={handleApply}>
+                Apply Now
+              </Button>
+            ) : (
+              <>
+                <Button className="bg-[#005f33] cursor-default" disabled>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Applied
+                </Button>
+                <Button variant="outline" className="bg-[#005f33]  text-white border-none" onClick={handleViewApplication}>
+                  View My Application
+                </Button>
+              </>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-6 mt-8">
             <div className="flex items-center text-gray-700">
               <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                <Briefcase className="w-5 h-5 text-[#0086C9]" />
+                <JobTypeIcon className="w-5 h-5 text-[#0086C9]" />
               </div>
-              <span className="text-lg font-semibold">Permanent</span>
+              <span className="text-lg font-semibold">{job.category}</span>
             </div>
             <div className="flex items-center text-gray-700">
               <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
                 <Clock className="w-5 h-5 text-[#0086C9]" />
               </div>
-              <span className="text-lg font-semibold">Full Time</span>
+              <span className="text-lg font-semibold">{job.type}</span>
             </div>
             <div className="flex items-center text-gray-700">
               <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
                 <Calendar className="w-5 h-5 text-[#0086C9]" />
               </div>
-              <span className="text-lg font-semibold">Closes: 25 April 2024</span>
+              <span className="text-lg font-semibold">
+                {job.type === 'Learnership' && job.duration ? `Duration: ${job.duration}` : `Closes: ${formatDate(job.closingDate)}`}
+              </span>
             </div>
             <div className="flex items-center text-gray-700">
-              <div className="bg-[#E0F2FE] text-[#0086C9] mr-2 p-2 rounded-full">R</div>
-              <span className="text-lg font-semibold">Negotiable</span>
+              <div className="bg-[#E0F2FE] text-[#0086C9]mr-2 p-2 rounded-full">R</div>
+              <span className="text-lg font-semibold">{job.stipend || job.salary}</span>
             </div>
             <div className="flex items-center text-gray-700">
               <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
                 <MapPin className="w-5 h-5 text-[#0086C9]" />
               </div>
-              <span className="text-lg font-semibold">Pretoria</span>
+              <span className="text-lg font-semibold">{job.location}</span>
             </div>
-            <div className="flex items-center text-gray-700">
-              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                <Building className="w-5 h-5 text-[#0086C9]" />
+            {job.grade && (
+              <div className="flex items-center text-gray-700">
+                <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                  <Building className="w-5 h-5 text-[#0086C9]" />
+                </div>
+                <span className="text-lg font-semibold">Grade: {job.grade}</span>
               </div>
-              <span className="text-lg font-semibold">Grade: D1-D5</span>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Job Description */}
         <div className="space-y-8">
           <section>
-            <h2 className="text-xl font-semibold mb-8">Introduction</h2>
+            <h2 className="text-xl font-semibold mb-8">{job.type === 'Learnership' ? 'Program Overview' : 'Introduction'}</h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
             <div className="text-gray-900 space-y-4">
               <p>
-                <strong>19 April 2024</strong>
+                <strong>{formatDate(job.postedDate)}</strong>
+              </p>
+              <p>{job.description}</p>
+              <p>
+                <strong>Position:</strong> {job.title}
+                <br />
+                {job.grade && (
+                  <>
+                    <strong>Job Grade:</strong> {job.grade}
+                    <br />
+                  </>
+                )}
+                <strong>(Ref: {job.reference})</strong>
               </p>
               <p>
-                The Public Investment Corporation (PIC) invests funds on behalf of public sector entities including the Government Employees
-                Pension Fund. The organisation is the largest investment manager in the country and the continent. Applications are invited
-                from dynamic individuals for the following challenging position:
-              </p>
-              <p>
-                <strong>Position:</strong> Analyst: Operational Risk Management
+                <strong>{job.stipend ? 'Stipend:' : 'Salary:'}</strong> {job.stipend || job.salary}
                 <br />
-                <strong>Job Grade:</strong> D1 – D5
-                <br />
-                <strong>(Ref: AORM001)</strong>
-              </p>
-              <p>
-                <strong>Salary:</strong> All-inclusive remuneration package negotiable
-                <br />
-                <strong>Centre:</strong> Public Investment Corporation, Pretoria
+                <strong>{job.type === 'Learnership' ? 'Location:' : 'Centre:'}</strong> {job.company}, {job.location}
               </p>
             </div>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-4">Requirements</h2>
+            <h2 className="text-lg font-semibold mb-4">{job.type === 'Learnership' ? 'Entry Requirements' : 'Requirements'}</h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
             <ul className="list-disc pl-6 space-y-2 text-gray-900">
-              <li>Relevant degree in Risk or Audit or equivalent relevant qualification</li>
-              <li>Sound understanding of operational risk management principles</li>
-              <li>Financial services industry knowledge and experience (Preferably Asset Management)</li>
-              <li>A good understanding of the key areas of the organization</li>
-              <li>2 - 4 Years relevant experience</li>
+              {job.requirements.map((requirement, index) => (
+                <li key={index}>{requirement}</li>
+              ))}
             </ul>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-4">Duties & Responsibilities</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              {job.type === 'Learnership' ? 'Learning Areas & Responsibilities' : 'Duties & Responsibilities'}
+            </h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
             <ul className="list-disc pl-6 space-y-2 text-gray-900">
-              <li>
-                Conduct day-to-day operational risk activities in terms of the Operational Risk Management Framework (ORMF) and related
-                frameworks, policies, and procedures
-              </li>
-              <li>
-                Assist the Senior Manager: Operational Risk in the identification, assessment, responses, and monitoring of Operational Risk
-                in the PIC
-              </li>
-              <li>Co-ordinate the risk analysis activities of the PIC Business Units, including both listed and unlisted investments</li>
-              <li>
-                Work with Compliance, Internal & External Audit functions and other Assurance Providers to direct their efforts towards
-                reviewing controls that mitigate the identified risks across the organization
-              </li>
-              <li>
-                Support process of identifying and reporting risk incidents and assist in the design of risk mitigation and control
-                procedures within PIC
-              </li>
-              <li>Support process of identifying and reporting issues and actions within PIC</li>
-              <li>Conduct control environment assessments for the organization</li>
-              <li>Conduct, implement and assess key risk indicators</li>
-              <li>Assist the ORM Department with reporting to various governance structures</li>
+              {job.responsibilities.map((responsibility, index) => (
+                <li key={index}>{responsibility}</li>
+              ))}
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">Competencies and Skills</h2>
+            <h2 className="text-xl font-semibold mb-3">
+              {job.type === 'Learnership' ? "Skills You'll Develop" : 'Competencies and Skills'}
+            </h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
-              <li>Problem-solving skills</li>
-              <li>Attention to detail</li>
-              <li>Good communication skills both verbal and written</li>
-              <li>Knowledge of compliance, risk, and financial management</li>
-              <li>Knowledge of financial markets - capital, money, equity, foreign exchange, and financial derivatives</li>
-              <li>Knowledge of insurance coverage, industry standards</li>
-              <li>
-                Knowledge of the ISO 31000 standards, Basel Operational Risk principles, COSO risk governance principles, corporate
-                governance principles e.g., King IV
-              </li>
-              <li>Knowledge of (ORX) Operational Risk Reporting Standards</li>
-              <li>Knowledge of enterprise risk management principles</li>
+              {job.skills.map((skill, index) => (
+                <li key={index}>{skill}</li>
+              ))}
             </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-3">Additional Information</h2>
-            <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <div className="text-gray-900 space-y-4">
-              <p>
-                With the PIC having topped the R2,6 trillion mark in assets under management and in the process of entering the global
-                investment market, it is the best asset manager any serious professional would want to be associated with. It is also one of
-                the better places from which one can serve South Africa.
-              </p>
-              <p>PIC is an equal opportunities employer and as such appointments will be in line with the PIC Employment Equity plan.</p>
-              <p>
-                <strong>Closing Date: 25 April 2024</strong>
-              </p>
-              <p>Please email a copy of your comprehensive CV to Recruitment4@pic.gov.za</p>
-              <p>
-                <em>* Grade range is from D1 – D5 commensurate with applicable minimum requirements.</em>
-              </p>
-              <p>
-                <strong>Privacy Notice:</strong> By submitting your job application, you consent to PIC's processing of your personal
-                information for the purposes of assessing your job application. PIC will process your Personal Information in accordance
-                with applicable laws and the PIC Privacy Policy available here (www.pic.gov.za). You are free to withdraw your consent at
-                any time, after which, PIC may no longer be able consider your job application.
-              </p>
-            </div>
           </section>
 
           <div className="flex justify-between pt-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/jobs')}
-              className="bg-white border border-[#0086C9] text-[#0086C9] w-[180px]"
-            >
-              Back
-            </Button>
-            <Button className="bg-[#0086C9] w-[180px] hover:bg-[#0086C9]" onClick={handleApply}>
-              Apply
+            <Button variant="outline" onClick={() => navigate('/jobs')} className="bg-[#005f33] border-none text-white w-[180px]">
+              Back to Jobs
             </Button>
           </div>
         </div>
@@ -292,12 +334,12 @@ const JobDetailPage: React.FC = () => {
               </div>
 
               <DialogFooter className="sm:justify-between">
-                <Button variant="outline" onClick={handleCloseModal} className="bg-white border border-[#0086C9] text-[#0086C9]">
+                <Button variant="outline" onClick={handleCloseModal} className="bg-white border border-[#005f33] text-[#005f33]">
                   Cancel
                 </Button>
                 <Button
                   onClick={handleSubmitApplication}
-                  className="bg-[#0086C9] hover:bg-[#0086C9]"
+                  className="bg-[#005f33] border-none text-white"
                   disabled={!educationLevel || !isEmployed || isSubmitting}
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Application'}
@@ -313,12 +355,12 @@ const JobDetailPage: React.FC = () => {
               <div className="py-8 text-center">
                 <div className="flex justify-center mb-4">
                   <div className="bg-green-100 p-3 rounded-full">
-                    <CheckCircle className="w-12 h-12 text-green-600" />
+                    <CheckCircle className="w-12 h-12 text-[#005f33]" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Success!</h3>
                 <p className="text-gray-600 mb-4">
-                  Your application for <strong>Analyst: Operational Risk Management</strong> has been successfully submitted.
+                  Your application for <strong>{job.title}</strong> has been successfully submitted.
                 </p>
                 <p className="text-sm text-gray-500">You will be redirected to your applications page shortly...</p>
               </div>
@@ -328,14 +370,7 @@ const JobDetailPage: React.FC = () => {
       </Dialog>
 
       {/* Footer */}
-      <footer className="bg-[#0086C9] text-white w-full bottom-0 py-6 mt-10">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">{/* <img src="/logo-2.svg" alt="EZRA Logo" className="w-8 h-8" /> */}</div>
-          <div>
-            <p className="text-sm">© 2077 EZRA. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
