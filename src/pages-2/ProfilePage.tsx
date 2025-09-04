@@ -1,16 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Check, CircleUser, Upload, FileText } from 'lucide-react';
+import { Check, CircleUser, Upload, FileText, X, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProgressStepsProgressIconsCentered from '@/components/ProgressStepsProgressIconsCentered';
 import HeaderV2 from './Header';
-import SubscribeAlertsModal from './SubscribeAlertsModal';
 import { useNavigate } from 'react-router-dom';
-import Footer from '@/components/Footer';
+
+
+const ProgressStepsProgressIconsCentered = () => (
+  <div className="flex items-center justify-center space-x-4 mb-6">
+    <div className="flex items-center">
+      <div className="bg-[#005f33] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">1</div>
+      <span className="ml-2 text-sm text-[#005f33]">Personal Info</span>
+    </div>
+    <div className="w-12 h-px bg-gray-300"></div>
+    <div className="flex items-center">
+      <div className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">2</div>
+      <span className="ml-2 text-sm text-gray-600">Contact Info</span>
+    </div>
+    <div className="w-12 h-px bg-gray-300"></div>
+    <div className="flex items-center">
+      <div className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">3</div>
+      <span className="ml-2 text-sm text-gray-600">CV Upload</span>
+    </div>
+  </div>
+);
+
+const Footer = () => (
+  <footer className="bg-[#005f33] text-white w-full py-6 mt-10">
+    <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+      <div className="mb-4 md:mb-0"></div>
+      <div>
+        <p className="text-sm">© 2077 EZRA. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+);
+
+// File upload interfaces
+interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadDate: string;
+  file: File;
+}
+
+interface FileUploadError {
+  message: string;
+  type: 'size' | 'type' | 'general';
+}
 
 // Form data interfaces
 interface ProfileFormData {
@@ -33,11 +76,6 @@ interface ContactFormData {
   alternativeNumber: string;
 }
 
-interface CVFormData {
-  cvFile: string;
-  documents: string[];
-}
-
 // Dummy data
 const dummyPersonalInfo: ProfileFormData = {
   firstName: 'Zizipho',
@@ -46,7 +84,7 @@ const dummyPersonalInfo: ProfileFormData = {
   lastName: 'Nceku',
   idNumber: '9001016281082',
   age: '33',
-  race: 'black',
+  race: 'Black African',
   dateOfBirth: '1990-01-01',
   gender: 'Female',
   passportNumber: 'AB123456',
@@ -59,11 +97,6 @@ const dummyContactInfo: ContactFormData = {
   alternativeNumber: '011 555 1234',
 };
 
-const dummyCVInfo: CVFormData = {
-  cvFile: 'zizipho_nceku_CV.pdf',
-  documents: ['ID_Document.pdf', 'Qualification_Certificate.pdf', 'Reference_Letter.pdf'],
-};
-
 const ProfilePage: React.FC = () => {
   // Active tab state
   const [activeTab, setActiveTab] = useState<string>('personal');
@@ -71,10 +104,187 @@ const ProfilePage: React.FC = () => {
   // Form data states
   const [personalFormData, setPersonalFormData] = useState<ProfileFormData>(dummyPersonalInfo);
   const [contactFormData, setContactFormData] = useState<ContactFormData>(dummyContactInfo);
-  const [cvFormData, setCvFormData] = useState<CVFormData>(dummyCVInfo);
+
+  // File upload states
+  const [cvFile, setCvFile] = useState<UploadedFile | null>(null);
+  const [documents, setDocuments] = useState<UploadedFile[]>([]);
+  const [uploadErrors, setUploadErrors] = useState<FileUploadError[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [activeDocTab, setActiveDocTab] = useState<string>('cv');
-  const navigate = useNavigate();
-  // Personal Info handlers
+
+  // File input refs
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
+  const documentsFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Mock navigate function
+  const navigate = useNavigate()
+
+  // File validation
+  const validateFile = (file: File, isCV: boolean = false): FileUploadError | null => {
+    const maxSize = isCV ? 5 * 1024 * 1024 : 10 * 1024 * 1024; // 5MB for CV, 10MB for documents
+    const allowedTypes = isCV
+      ? ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      : [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'image/jpeg',
+          'image/png',
+        ];
+
+    if (file.size > maxSize) {
+      return {
+        message: `File size must be less than ${isCV ? '5MB' : '10MB'}`,
+        type: 'size',
+      };
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      return {
+        message: isCV ? 'CV must be PDF, DOC, or DOCX format' : 'File must be PDF, DOC, DOCX, JPG, or PNG format',
+        type: 'type',
+      };
+    }
+
+    return null;
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Handle CV file upload
+  const handleCvFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const error = validateFile(file, true);
+
+    if (error) {
+      setUploadErrors([error]);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadErrors([]);
+
+    try {
+      // Simulate upload delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const uploadedFile: UploadedFile = {
+        id: Date.now().toString(),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        uploadDate: new Date().toISOString(),
+        file: file,
+      };
+
+      setCvFile(uploadedFile);
+
+      // Reset file input
+      if (cvFileInputRef.current) {
+        cvFileInputRef.current.value = '';
+      }
+    } catch (error) {
+      setUploadErrors([
+        {
+          message: 'Failed to upload file. Please try again.',
+          type: 'general',
+        },
+      ]);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Handle documents file upload
+  const handleDocumentsFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    setUploadErrors([]);
+
+    const newDocuments: UploadedFile[] = [];
+    const errors: FileUploadError[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const error = validateFile(file, false);
+
+      if (error) {
+        errors.push({
+          message: `${file.name}: ${error.message}`,
+          type: error.type,
+        });
+        continue;
+      }
+
+      // Simulate upload delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const uploadedFile: UploadedFile = {
+        id: Date.now().toString() + i,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        uploadDate: new Date().toISOString(),
+        file: file,
+      };
+
+      newDocuments.push(uploadedFile);
+    }
+
+    if (errors.length > 0) {
+      setUploadErrors(errors);
+    }
+
+    if (newDocuments.length > 0) {
+      setDocuments((prev) => [...prev, ...newDocuments]);
+    }
+
+    // Reset file input
+    if (documentsFileInputRef.current) {
+      documentsFileInputRef.current.value = '';
+    }
+
+    setIsUploading(false);
+  };
+
+  // Handle drag and drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent, isCV: boolean = false) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const files = e.dataTransfer.files;
+    if (isCV) {
+      handleCvFileUpload(files);
+    } else {
+      handleDocumentsFileUpload(files);
+    }
+  };
+
+  // Delete file handlers
+  const handleDeleteCV = () => {
+    setCvFile(null);
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+  };
+
+  // Form handlers
   const handlePersonalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPersonalFormData((prev) => ({ ...prev, [name]: value }));
@@ -84,25 +294,6 @@ const ProfilePage: React.FC = () => {
     setPersonalFormData((prev) => ({ ...prev, title: value }));
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setActiveTab('personal');
-  };
-
-  const handleSaveSubscription = () => {
-    // console.log('Subscription data:', data);
-
-    setActiveTab('personal');
-    // Process subscription data
-  };
-
-  // Contact Info handlers
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setContactFormData((prev) => ({ ...prev, [name]: value }));
@@ -113,47 +304,20 @@ const ProfilePage: React.FC = () => {
     e.preventDefault();
     console.log('Personal Info:', personalFormData);
     console.log('Contact Info:', contactFormData);
-    console.log('CV Info:', cvFormData);
+    console.log('CV File:', cvFile);
+    console.log('Documents:', documents);
 
-    // Redirect to /jobs
+    // In a real app, you would upload files to a server here
     navigate('/jobs');
   };
 
-  // File upload handling (mock)
-  const handleFileUpload = () => {
-    alert('File upload functionality would be implemented here');
-  };
-
-  // Delete document handling (mock)
-  const handleDeleteDocument = (docName: string) => {
-    setCvFormData((prev) => ({
-      ...prev,
-      documents: prev.documents.filter((doc) => doc !== docName),
-    }));
+  // Clear errors
+  const clearErrors = () => {
+    setUploadErrors([]);
   };
 
   return (
     <div className="min-h-screen bg-[#F2F4F7]">
-      {/* Header with navigation - simplified for focus */}
-      {/* <header className="bg-white py-4 shadow-sm">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-20 h-20 rounded flex items-center justify-center">
-              <img src="/logo-2.svg" alt="EZRA Logo" className="w-6 h-6" />
-            </div>
-            <nav className="ml-8 hidden md:flex space-x-6">
-              <a href="#" className="text-[#475467] font-semibold ">Home</a>
-              <a href="#" className="text-[#475467] font-semibold ">
-                EZRA Jobs <span className="ml-1"></span>
-              </a>
-              <a href="#" className="text-[#475467] font-semibold ">
-                EZRA News <span className="ml-1"></span>
-              </a>
-              <a href="#" className="text-[#475467] font-semibold ">Contact Us</a>
-            </nav>
-          </div>
-        </div>
-      </header> */}
       <HeaderV2 />
 
       <div className="container mx-auto px-4 py-8">
@@ -172,51 +336,55 @@ const ProfilePage: React.FC = () => {
           <ProgressStepsProgressIconsCentered />
         </div>
 
+        {/* Error Display */}
+        {uploadErrors.length > 0 && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-2" />
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800">Upload Errors</h3>
+                <ul className="mt-1 text-sm text-red-700 list-disc list-inside">
+                  {uploadErrors.map((error, index) => (
+                    <li key={index}>{error.message}</li>
+                  ))}
+                </ul>
+              </div>
+              <button onClick={clearErrors} className="text-red-600 hover:text-red-800">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Content Area */}
         <div className="flex bg-white rounded-xl flex-col md:flex-row gap-8">
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-xl p-5">
             <div className="space-y-2">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('personal');
-                }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'personal' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
+              <button
+                onClick={() => setActiveTab('personal')}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 w-full ${
+                  activeTab === 'personal' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 hover:bg-gray-50'
+                }`}
               >
                 Personal Info
-              </a>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('contact');
-                }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'contact' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
+              </button>
+              <button
+                onClick={() => setActiveTab('contact')}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 w-full ${
+                  activeTab === 'contact' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 hover:bg-gray-50'
+                }`}
               >
                 Contact Info
-              </a>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('cv');
-                }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'cv' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
+              </button>
+              <button
+                onClick={() => setActiveTab('cv')}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 w-full ${
+                  activeTab === 'cv' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 hover:bg-gray-50'
+                }`}
               >
                 Manage My CV
-              </a>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('alerts');
-                }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'alerts' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 '}`}
-              >
-                Subscribe to Alerts
-              </a>
+              </button>
             </div>
           </div>
 
@@ -224,8 +392,6 @@ const ProfilePage: React.FC = () => {
           <div className="flex-1 mb-20 rounded-lg">
             <Card className="bg-white border-none rounded-lg shadow-none">
               <CardContent className="pt-6 rounded-lg">
-                <SubscribeAlertsModal isOpen={activeTab === 'alerts'} onClose={handleCloseModal} onSave={handleSaveSubscription} />
-
                 {/* Personal Info Tab */}
                 {activeTab === 'personal' && (
                   <>
@@ -248,11 +414,11 @@ const ProfilePage: React.FC = () => {
                               <SelectValue placeholder="Select a title" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="mr">Mr.</SelectItem>
-                              <SelectItem value="mrs">Mrs.</SelectItem>
-                              <SelectItem value="ms">Ms.</SelectItem>
-                              <SelectItem value="dr">Dr.</SelectItem>
-                              <SelectItem value="prof">Prof.</SelectItem>
+                              <SelectItem value="Mr">Mr.</SelectItem>
+                              <SelectItem value="Mrs">Mrs.</SelectItem>
+                              <SelectItem value="Ms">Ms.</SelectItem>
+                              <SelectItem value="Dr">Dr.</SelectItem>
+                              <SelectItem value="Prof">Prof.</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -276,7 +442,6 @@ const ProfilePage: React.FC = () => {
                             className="w-full"
                           />
                         </div>
-
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last name</Label>
                           <Input
@@ -304,7 +469,21 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="race">Race</Label>
-                          <Input id="race" name="race" value={personalFormData.race} onChange={handlePersonalChange} className="w-full" />
+                          <Select
+                            value={personalFormData.race}
+                            onValueChange={(value) => setPersonalFormData((prev) => ({ ...prev, race: value }))}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select race" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Black African">Black African</SelectItem>
+                              <SelectItem value="Coloured">Coloured</SelectItem>
+                              <SelectItem value="Indian/Asian">Indian/Asian</SelectItem>
+                              <SelectItem value="White">White</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="dateOfBirth">Date of birth</Label>
@@ -319,13 +498,20 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="gender">Gender</Label>
-                          <Input
-                            id="gender"
-                            name="gender"
+                          <Select
                             value={personalFormData.gender}
-                            onChange={handlePersonalChange}
-                            className="w-full"
-                          />
+                            onValueChange={(value) => setPersonalFormData((prev) => ({ ...prev, gender: value }))}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                              <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="passportNumber">Passport Number (optional)</Label>
@@ -339,13 +525,20 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label htmlFor="rightToWork">Right to Work status</Label>
-                          <Input
-                            id="rightToWork"
-                            name="rightToWork"
+                          <Select
                             value={personalFormData.rightToWork}
-                            onChange={handlePersonalChange}
-                            className="w-full"
-                          />
+                            onValueChange={(value) => setPersonalFormData((prev) => ({ ...prev, rightToWork: value }))}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="South African Citizen">South African Citizen</SelectItem>
+                              <SelectItem value="Permanent Resident">Permanent Resident</SelectItem>
+                              <SelectItem value="Work Permit Holder">Work Permit Holder</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 
@@ -445,33 +638,46 @@ const ProfilePage: React.FC = () => {
                       </TabsList>
 
                       <TabsContent value="cv" className="mt-6">
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <div
+                          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#005f33] transition-colors"
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, true)}
+                        >
                           <div className="flex flex-col items-center justify-center">
-                            <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                            <h3 className="text-lg font-medium mb-2">Upload CV</h3>
+                            <Upload className={`h-12 w-12 mb-4 ${isUploading ? 'text-[#005f33] animate-pulse' : 'text-gray-400'}`} />
+                            <h3 className="text-lg font-medium mb-2">{isUploading ? 'Uploading...' : 'Upload CV'}</h3>
                             <p className="text-sm text-gray-500 mb-4">Drag and drop your CV file here, or click to browse</p>
                             <p className="text-xs text-gray-400 mb-4">Supported formats: PDF, DOC, DOCX (Max size: 5MB)</p>
-                            <Button onClick={handleFileUpload} className="bg-[#005f33] hover:bg-[#005f33]">
-                              Browse Files
+                            <Button
+                              onClick={() => cvFileInputRef.current?.click()}
+                              className="bg-[#005f33] hover:bg-[#005f33]"
+                              disabled={isUploading}
+                            >
+                              {isUploading ? 'Uploading...' : 'Browse Files'}
                             </Button>
+                            <input
+                              ref={cvFileInputRef}
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.doc,.docx"
+                              onChange={(e) => handleCvFileUpload(e.target.files)}
+                            />
                           </div>
                         </div>
 
-                        {cvFormData.cvFile && (
+                        {cvFile && (
                           <div className="mt-6 p-4 border border-gray-200 rounded-lg">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <FileText className="h-6 w-6 mr-2 text-[#005f33]" />
                                 <div>
-                                  <p className="font-medium">{cvFormData.cvFile}</p>
-                                  <p className="text-xs text-gray-500">Uploaded on April 8, 2025</p>
+                                  <p className="font-medium">{cvFile.name}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {formatFileSize(cvFile.size)} • Uploaded on {new Date(cvFile.uploadDate).toLocaleDateString()}
+                                  </p>
                                 </div>
                               </div>
-                              <Button
-                                variant="ghost"
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => setCvFormData((prev) => ({ ...prev, cvFile: '' }))}
-                              >
+                              <Button variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={handleDeleteCV}>
                                 Delete
                               </Button>
                             </div>
@@ -480,35 +686,53 @@ const ProfilePage: React.FC = () => {
                       </TabsContent>
 
                       <TabsContent value="documents" className="mt-6">
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <div
+                          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#005f33] transition-colors"
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, false)}
+                        >
                           <div className="flex flex-col items-center justify-center">
-                            <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                            <h3 className="text-lg font-medium mb-2">Upload Documents</h3>
+                            <Upload className={`h-12 w-12 mb-4 ${isUploading ? 'text-[#005f33] animate-pulse' : 'text-gray-400'}`} />
+                            <h3 className="text-lg font-medium mb-2">{isUploading ? 'Uploading...' : 'Upload Documents'}</h3>
                             <p className="text-sm text-gray-500 mb-4">Drag and drop your documents here, or click to browse</p>
                             <p className="text-xs text-gray-400 mb-4">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max size: 10MB)</p>
-                            <Button onClick={handleFileUpload} className="bg-[#005f33] hover:bg-[#005f33]">
-                              Browse Files
+                            <Button
+                              onClick={() => documentsFileInputRef.current?.click()}
+                              className="bg-[#005f33] hover:bg-[#005f33]"
+                              disabled={isUploading}
+                            >
+                              {isUploading ? 'Uploading...' : 'Browse Files'}
                             </Button>
+                            <input
+                              ref={documentsFileInputRef}
+                              type="file"
+                              multiple
+                              className="hidden"
+                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                              onChange={(e) => handleDocumentsFileUpload(e.target.files)}
+                            />
                           </div>
                         </div>
 
-                        {cvFormData.documents.length > 0 && (
+                        {documents.length > 0 && (
                           <div className="mt-6 space-y-4">
-                            <h3 className="font-medium">Your Documents</h3>
-                            {cvFormData.documents.map((doc, index) => (
-                              <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                            <h3 className="font-medium">Your Documents ({documents.length})</h3>
+                            {documents.map((doc) => (
+                              <div key={doc.id} className="p-4 border border-gray-200 rounded-lg">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
                                     <FileText className="h-6 w-6 mr-2 text-[#005f33]" />
                                     <div>
-                                      <p className="font-medium">{doc}</p>
-                                      <p className="text-xs text-gray-500">Uploaded on April 8, 2025</p>
+                                      <p className="font-medium">{doc.name}</p>
+                                      <p className="text-xs text-gray-500">
+                                        {formatFileSize(doc.size)} • Uploaded on {new Date(doc.uploadDate).toLocaleDateString()}
+                                      </p>
                                     </div>
                                   </div>
                                   <Button
                                     variant="ghost"
                                     className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                    onClick={() => handleDeleteDocument(doc)}
+                                    onClick={() => handleDeleteDocument(doc.id)}
                                   >
                                     Delete
                                   </Button>
