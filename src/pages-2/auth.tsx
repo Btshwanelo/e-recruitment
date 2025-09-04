@@ -104,10 +104,12 @@ const AuthPageV2 = () => {
       <div className="w-full max-w-md">
         {/* Heading */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-semibold text-gray-900">Create an account</h1>
-          <p className="mt-2 text-center text-gray-600">
+          <h1 className="text-3xl font-semibold text-gray-900">
+            {activeTab === 'signup' ? 'Create Your Account' : 'Sign In to Your Account'}
+          </h1>
+          {/* <p className="mt-2 text-center text-gray-600">
             Don't worry if you're missing details! Use this profile to save your application and complete it when you're ready
-          </p>
+          </p> */}
         </div>
 
         {/* Tabs */}
@@ -241,7 +243,7 @@ const AuthPageV2 = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full py-6 bg-[#0086C9] hover:bg-[#0077b3] font-semibold text-white" disabled={isLoading}>
+            <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Creating account...' : 'Get started'}
             </Button>
           </form>
@@ -282,7 +284,7 @@ const AuthPageV2 = () => {
               <p className="mt-1 text-xs text-gray-500">Try test@example.com / Password123!</p>
             </div>
 
-            <Button type="submit" className="w-full py-6 bg-[#0086C9] hover:bg-[#0077b3] font-semibold text-white" disabled={isLoading}>
+            <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
@@ -294,7 +296,7 @@ const AuthPageV2 = () => {
             {activeTab === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
             <button
               type="button"
-              className="text-[#0086C9] hover:text-[#0077b3] font-medium"
+              className="text-[#005f33] font-medium"
               onClick={() => handleTabChange(activeTab === 'signup' ? 'login' : 'signup')}
             >
               {activeTab === 'signup' ? 'Log in' : 'Sign up'}
