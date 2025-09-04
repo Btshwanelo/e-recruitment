@@ -1,25 +1,15 @@
-import React, { useState } from "react";
-import { 
-  Card, 
-  CardContent,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Check, CircleUser, Upload, FileText } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProgressStepsProgressIconsCentered from "@/components/ProgressStepsProgressIconsCentered";
-import HeaderV2 from "./Header";
-import SubscribeAlertsModal from "./SubscribeAlertsModal";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Check, CircleUser, Upload, FileText } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ProgressStepsProgressIconsCentered from '@/components/ProgressStepsProgressIconsCentered';
+import HeaderV2 from './Header';
+import SubscribeAlertsModal from './SubscribeAlertsModal';
+import { useNavigate } from 'react-router-dom';
 
 // Form data interfaces
 interface ProfileFormData {
@@ -49,40 +39,40 @@ interface CVFormData {
 
 // Dummy data
 const dummyPersonalInfo: ProfileFormData = {
-  firstName: "Zizipho",
-  initial: "ZN",
-  title: "Mrs",
-  lastName: "Nceku",
-  idNumber: "9001016281082",
-  age: "33",
-  race: "black",
-  dateOfBirth: "1990-01-01",
-  gender: "Female",
-  passportNumber: "AB123456",
-  rightToWork: "South African Citizen"
+  firstName: 'Zizipho',
+  initial: 'ZN',
+  title: 'Mrs',
+  lastName: 'Nceku',
+  idNumber: '9001016281082',
+  age: '33',
+  race: 'black',
+  dateOfBirth: '1990-01-01',
+  gender: 'Female',
+  passportNumber: 'AB123456',
+  rightToWork: 'South African Citizen',
 };
 
 const dummyContactInfo: ContactFormData = {
-  email: "zizipho.nceku@example.com",
-  mobileNumber: "082 123 4567",
-  alternativeNumber: "011 555 1234"
+  email: 'zizipho.nceku@example.com',
+  mobileNumber: '082 123 4567',
+  alternativeNumber: '011 555 1234',
 };
 
 const dummyCVInfo: CVFormData = {
-  cvFile: "zizipho_nceku_CV.pdf",
-  documents: ["ID_Document.pdf", "Qualification_Certificate.pdf", "Reference_Letter.pdf"]
+  cvFile: 'zizipho_nceku_CV.pdf',
+  documents: ['ID_Document.pdf', 'Qualification_Certificate.pdf', 'Reference_Letter.pdf'],
 };
 
 const ProfilePage: React.FC = () => {
   // Active tab state
-  const [activeTab, setActiveTab] = useState<string>("personal");
-  
+  const [activeTab, setActiveTab] = useState<string>('personal');
+
   // Form data states
   const [personalFormData, setPersonalFormData] = useState<ProfileFormData>(dummyPersonalInfo);
   const [contactFormData, setContactFormData] = useState<ContactFormData>(dummyContactInfo);
   const [cvFormData, setCvFormData] = useState<CVFormData>(dummyCVInfo);
-  const [activeDocTab, setActiveDocTab] = useState<string>("cv");
-
+  const [activeDocTab, setActiveDocTab] = useState<string>('cv');
+  const navigate = useNavigate();
   // Personal Info handlers
   const handlePersonalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -101,13 +91,13 @@ const ProfilePage: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setActiveTab("personal");
+    setActiveTab('personal');
   };
 
   const handleSaveSubscription = () => {
     // console.log('Subscription data:', data);
 
-    setActiveTab("personal");
+    setActiveTab('personal');
     // Process subscription data
   };
 
@@ -120,24 +110,24 @@ const ProfilePage: React.FC = () => {
   // Submit handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Personal Info:", personalFormData);
-    console.log("Contact Info:", contactFormData);
-    console.log("CV Info:", cvFormData);
-    
+    console.log('Personal Info:', personalFormData);
+    console.log('Contact Info:', contactFormData);
+    console.log('CV Info:', cvFormData);
+
     // Redirect to /jobs
-    window.location.href = '/jobs';
+    navigate('/jobs');
   };
 
   // File upload handling (mock)
   const handleFileUpload = () => {
-    alert("File upload functionality would be implemented here");
+    alert('File upload functionality would be implemented here');
   };
 
   // Delete document handling (mock)
   const handleDeleteDocument = (docName: string) => {
-    setCvFormData(prev => ({
+    setCvFormData((prev) => ({
       ...prev,
-      documents: prev.documents.filter(doc => doc !== docName)
+      documents: prev.documents.filter((doc) => doc !== docName),
     }));
   };
 
@@ -167,16 +157,16 @@ const ProfilePage: React.FC = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Profile Card */}
-        <Card 
-          className="w-full min-h-[180px] mb-10 text-white border-none" 
-          style={{ background: "linear-gradient(27deg, #182230 8.28%, #344054 91.72%)" }}
+        <Card
+          className="w-full min-h-[180px] mb-10 text-white border-none"
+          style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
         >
           <CardHeader>
             <CardTitle className="text-4xl font-bold mb-8">Profile</CardTitle>
             <p className="text-gray-300 font-normal text-xl mt-2">Manage your profile here</p>
           </CardHeader>
         </Card>
-        
+
         <div className="mb-8">
           <ProgressStepsProgressIconsCentered />
         </div>
@@ -186,31 +176,43 @@ const ProfilePage: React.FC = () => {
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-xl p-5">
             <div className="space-y-2">
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); setActiveTab("personal"); }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === "personal" ? "text-[#2B6EDF] bg-[#F6F9FE]" : "text-gray-600 hover:text-blue-500"}`}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveTab('personal');
+                }}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'personal' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
               >
                 Personal Info
               </a>
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); setActiveTab("contact"); }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === "contact" ? "text-[#2B6EDF] bg-[#F6F9FE]" : "text-gray-600 hover:text-blue-500"}`}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveTab('contact');
+                }}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'contact' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
               >
                 Contact Info
               </a>
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); setActiveTab("cv"); }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === "cv" ? "text-[#2B6EDF] bg-[#F6F9FE]" : "text-gray-600 hover:text-blue-500"}`}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveTab('cv');
+                }}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'cv' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
               >
                 Manage My CV
               </a>
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); setActiveTab("alerts"); }}
-                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === "alerts" ? "text-[#2B6EDF] bg-[#F6F9FE]" : "text-gray-600 hover:text-blue-500"}`}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveTab('alerts');
+                }}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 ${activeTab === 'alerts' ? 'text-[#2B6EDF] bg-[#F6F9FE]' : 'text-gray-600 hover:text-blue-500'}`}
               >
                 Subscribe to Alerts
               </a>
@@ -221,29 +223,27 @@ const ProfilePage: React.FC = () => {
           <div className="flex-1 mb-20 rounded-lg">
             <Card className="bg-white border-none rounded-lg shadow-none">
               <CardContent className="pt-6 rounded-lg">
-              <SubscribeAlertsModal
-        isOpen={activeTab === "alerts"}
-        onClose={handleCloseModal}
-        onSave={handleSaveSubscription}
-      />
-                
+                <SubscribeAlertsModal isOpen={activeTab === 'alerts'} onClose={handleCloseModal} onSave={handleSaveSubscription} />
+
                 {/* Personal Info Tab */}
-                {activeTab === "personal" && (
+                {activeTab === 'personal' && (
                   <>
                     <h2 className="text-xl font-semibold mb-2">Personal info</h2>
                     <p className="text-gray-500 text-sm mb-4">
-                      Please provide some information about yourself. The First Name and Last Name you provide will be displayed alongside any comments, forum posts, or ideas you make on the site.
+                      Please provide some information about yourself. The First Name and Last Name you provide will be displayed alongside
+                      any comments, forum posts, or ideas you make on the site.
                     </p>
                     <p className="text-gray-500 text-sm mb-6">
-                      The Email Address and Phone number will not be displayed on the site. Your Organization and Title are optional. They will be displayed with your comments and forum posts.
+                      The Email Address and Phone number will not be displayed on the site. Your Organization and Title are optional. They
+                      will be displayed with your comments and forum posts.
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First name(s)</Label>
-                          <Input 
-                            id="firstName" 
+                          <Input
+                            id="firstName"
                             name="firstName"
                             value={personalFormData.firstName}
                             onChange={handlePersonalChange}
@@ -252,8 +252,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="initial">Initial</Label>
-                          <Input 
-                            id="initial" 
+                          <Input
+                            id="initial"
                             name="initial"
                             value={personalFormData.initial}
                             onChange={handlePersonalChange}
@@ -277,8 +277,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last name</Label>
-                          <Input 
-                            id="lastName" 
+                          <Input
+                            id="lastName"
                             name="lastName"
                             value={personalFormData.lastName}
                             onChange={handlePersonalChange}
@@ -287,8 +287,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="idNumber">ID number</Label>
-                          <Input 
-                            id="idNumber" 
+                          <Input
+                            id="idNumber"
                             name="idNumber"
                             value={personalFormData.idNumber}
                             onChange={handlePersonalChange}
@@ -298,28 +298,16 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="age">Age</Label>
-                          <Input 
-                            id="age" 
-                            name="age"
-                            value={personalFormData.age}
-                            onChange={handlePersonalChange}
-                            className="w-full"
-                          />
+                          <Input id="age" name="age" value={personalFormData.age} onChange={handlePersonalChange} className="w-full" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="race">Race</Label>
-                          <Input 
-                            id="race" 
-                            name="race"
-                            value={personalFormData.race}
-                            onChange={handlePersonalChange}
-                            className="w-full"
-                          />
+                          <Input id="race" name="race" value={personalFormData.race} onChange={handlePersonalChange} className="w-full" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="dateOfBirth">Date of birth</Label>
-                          <Input 
-                            id="dateOfBirth" 
+                          <Input
+                            id="dateOfBirth"
                             name="dateOfBirth"
                             type="date"
                             value={personalFormData.dateOfBirth}
@@ -329,8 +317,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="gender">Gender</Label>
-                          <Input 
-                            id="gender" 
+                          <Input
+                            id="gender"
                             name="gender"
                             value={personalFormData.gender}
                             onChange={handlePersonalChange}
@@ -339,8 +327,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="passportNumber">Passport Number (optional)</Label>
-                          <Input 
-                            id="passportNumber" 
+                          <Input
+                            id="passportNumber"
                             name="passportNumber"
                             value={personalFormData.passportNumber}
                             onChange={handlePersonalChange}
@@ -349,8 +337,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label htmlFor="rightToWork">Right to Work status</Label>
-                          <Input 
-                            id="rightToWork" 
+                          <Input
+                            id="rightToWork"
                             name="rightToWork"
                             value={personalFormData.rightToWork}
                             onChange={handlePersonalChange}
@@ -372,19 +360,20 @@ const ProfilePage: React.FC = () => {
                 )}
 
                 {/* Contact Info Tab */}
-                {activeTab === "contact" && (
+                {activeTab === 'contact' && (
                   <>
                     <h2 className="text-xl font-semibold mb-2">Contact info</h2>
                     <p className="text-gray-500 text-sm mb-6">
-                      Please provide your contact information. This information will be used to communicate with you regarding job applications and other important updates.
+                      Please provide your contact information. This information will be used to communicate with you regarding job
+                      applications and other important updates.
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2 md:col-span-2">
                           <Label htmlFor="email">Email address</Label>
-                          <Input 
-                            id="email" 
+                          <Input
+                            id="email"
                             name="email"
                             type="email"
                             value={contactFormData.email}
@@ -395,8 +384,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="mobileNumber">Mobile number</Label>
-                          <Input 
-                            id="mobileNumber" 
+                          <Input
+                            id="mobileNumber"
                             name="mobileNumber"
                             value={contactFormData.mobileNumber}
                             onChange={handleContactChange}
@@ -405,8 +394,8 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="alternativeNumber">Alternative number (optional)</Label>
-                          <Input 
-                            id="alternativeNumber" 
+                          <Input
+                            id="alternativeNumber"
                             name="alternativeNumber"
                             value={contactFormData.alternativeNumber}
                             onChange={handleContactChange}
@@ -428,7 +417,7 @@ const ProfilePage: React.FC = () => {
                 )}
 
                 {/* CV Management Tab */}
-                {activeTab === "cv" && (
+                {activeTab === 'cv' && (
                   <>
                     <h2 className="text-xl font-semibold mb-2">Manage my CV</h2>
                     <p className="text-gray-500 text-sm mb-6">
@@ -437,39 +426,35 @@ const ProfilePage: React.FC = () => {
 
                     <Tabs defaultValue="cv" className="w-full mb-6">
                       <TabsList className="grid w-fit grid-cols-2 bg-white shadow-none text-[#026AA2]">
-                        <TabsTrigger 
-                          value="cv" 
-                          onClick={() => setActiveDocTab("cv")}
-                          className={activeDocTab === "cv" ? "text-[#026AA2] font-semibold shadow-none bg-[#F0F9FF]" : ""}
+                        <TabsTrigger
+                          value="cv"
+                          onClick={() => setActiveDocTab('cv')}
+                          className={activeDocTab === 'cv' ? 'text-[#026AA2] font-semibold shadow-none bg-[#F0F9FF]' : ''}
                         >
                           My CV
                         </TabsTrigger>
-                        <TabsTrigger 
-                          value="documents" 
-                          onClick={() => setActiveDocTab("documents")}
-                          className={activeDocTab === "documents" ? "text-[#026AA2] font-semibold shadow-none bg-[#F0F9FF]" : ""}
+                        <TabsTrigger
+                          value="documents"
+                          onClick={() => setActiveDocTab('documents')}
+                          className={activeDocTab === 'documents' ? 'text-[#026AA2] font-semibold shadow-none bg-[#F0F9FF]' : ''}
                         >
                           Documents
                         </TabsTrigger>
                       </TabsList>
-                      
+
                       <TabsContent value="cv" className="mt-6">
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                           <div className="flex flex-col items-center justify-center">
                             <Upload className="h-12 w-12 text-gray-400 mb-4" />
                             <h3 className="text-lg font-medium mb-2">Upload CV</h3>
-                            <p className="text-sm text-gray-500 mb-4">
-                              Drag and drop your CV file here, or click to browse
-                            </p>
-                            <p className="text-xs text-gray-400 mb-4">
-                              Supported formats: PDF, DOC, DOCX (Max size: 5MB)
-                            </p>
+                            <p className="text-sm text-gray-500 mb-4">Drag and drop your CV file here, or click to browse</p>
+                            <p className="text-xs text-gray-400 mb-4">Supported formats: PDF, DOC, DOCX (Max size: 5MB)</p>
                             <Button onClick={handleFileUpload} className="bg-[#0086C9] hover:bg-[#0086C9]">
                               Browse Files
                             </Button>
                           </div>
                         </div>
-                        
+
                         {cvFormData.cvFile && (
                           <div className="mt-6 p-4 border border-gray-200 rounded-lg">
                             <div className="flex items-center justify-between">
@@ -480,10 +465,10 @@ const ProfilePage: React.FC = () => {
                                   <p className="text-xs text-gray-500">Uploaded on April 8, 2025</p>
                                 </div>
                               </div>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => setCvFormData(prev => ({ ...prev, cvFile: "" }))}
+                                onClick={() => setCvFormData((prev) => ({ ...prev, cvFile: '' }))}
                               >
                                 Delete
                               </Button>
@@ -491,24 +476,20 @@ const ProfilePage: React.FC = () => {
                           </div>
                         )}
                       </TabsContent>
-                      
+
                       <TabsContent value="documents" className="mt-6">
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                           <div className="flex flex-col items-center justify-center">
                             <Upload className="h-12 w-12 text-gray-400 mb-4" />
                             <h3 className="text-lg font-medium mb-2">Upload Documents</h3>
-                            <p className="text-sm text-gray-500 mb-4">
-                              Drag and drop your documents here, or click to browse
-                            </p>
-                            <p className="text-xs text-gray-400 mb-4">
-                              Supported formats: PDF, DOC, DOCX, JPG, PNG (Max size: 10MB)
-                            </p>
+                            <p className="text-sm text-gray-500 mb-4">Drag and drop your documents here, or click to browse</p>
+                            <p className="text-xs text-gray-400 mb-4">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max size: 10MB)</p>
                             <Button onClick={handleFileUpload} className="bg-[#0086C9] hover:bg-[#0086C9]">
                               Browse Files
                             </Button>
                           </div>
                         </div>
-                        
+
                         {cvFormData.documents.length > 0 && (
                           <div className="mt-6 space-y-4">
                             <h3 className="font-medium">Your Documents</h3>
@@ -522,8 +503,8 @@ const ProfilePage: React.FC = () => {
                                       <p className="text-xs text-gray-500">Uploaded on April 8, 2025</p>
                                     </div>
                                   </div>
-                                  <Button 
-                                    variant="ghost" 
+                                  <Button
+                                    variant="ghost"
                                     className="text-red-500 hover:text-red-700 hover:bg-red-50"
                                     onClick={() => handleDeleteDocument(doc)}
                                   >
@@ -556,9 +537,7 @@ const ProfilePage: React.FC = () => {
       {/* Footer */}
       <footer className="bg-[#0086C9] text-white w-full bottom-0 py-6 mt-4">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            {/* <img src="/logo-2.svg" alt="EZRA Logo" className="w-8 h-8" /> */}
-          </div>
+          <div className="mb-4 md:mb-0">{/* <img src="/logo-2.svg" alt="EZRA Logo" className="w-8 h-8" /> */}</div>
           <div>
             <p className="text-sm">© 2077 EZRA. All rights reserved.</p>
           </div>
