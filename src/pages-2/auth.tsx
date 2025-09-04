@@ -59,7 +59,7 @@ const AuthPageV2 = () => {
     e.preventDefault();
     if (validateLoginForm()) {
       setIsLoading(true);
-      
+
       // Simulate API call delay
       setTimeout(() => {
         // Simple validation - in a real app this would be handled by your backend
@@ -78,7 +78,7 @@ const AuthPageV2 = () => {
     e.preventDefault();
     if (validateSignupForm()) {
       setIsLoading(true);
-      
+
       // Simulate API call delay
       setTimeout(() => {
         // In a real app, this would create a new user in your backend
@@ -98,7 +98,7 @@ const AuthPageV2 = () => {
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
       {/* Logo */}
       <div className="mb-2">
-        <img src="/pic-logo-small.png" alt="RHS Services Logo" className="h-20" />
+        <img src="/dcs-logo.png" alt="RHS Services Logo" className="h-20" />
       </div>
 
       <div className="w-full max-w-md">
@@ -241,11 +241,7 @@ const AuthPageV2 = () => {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full py-6 bg-[#0086C9] hover:bg-[#0077b3] font-semibold text-white"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full py-6 bg-[#0086C9] hover:bg-[#0077b3] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Creating account...' : 'Get started'}
             </Button>
           </form>
@@ -286,11 +282,7 @@ const AuthPageV2 = () => {
               <p className="mt-1 text-xs text-gray-500">Try test@example.com / Password123!</p>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full py-6 bg-[#0086C9] hover:bg-[#0077b3] font-semibold text-white"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full py-6 bg-[#0086C9] hover:bg-[#0077b3] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>

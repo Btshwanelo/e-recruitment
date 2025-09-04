@@ -1,5 +1,5 @@
-import React from "react";
-import ProgressStep from "./ProgressSteper";
+import React from 'react';
+import ProgressStep from './ProgressSteper';
 
 const ProgressStepsProgressIconsCentered: React.FC = () => {
   return (
@@ -12,11 +12,23 @@ const ProgressStepsProgressIconsCentered: React.FC = () => {
         </div>
 
         {/* Steps */}
-        <ProgressStep status="completed" label="Sign Up" iconSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/f7b50bb7a5618ab27efa839ecddf858e2df8db03?placeholderIfAbsent=true&apiKey=53c38ecfba4342d7a373232ca08317d5" />
+        <ProgressStep
+          status="completed"
+          label="Sign Up"
+          iconSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/f7b50bb7a5618ab27efa839ecddf858e2df8db03?placeholderIfAbsent=true&apiKey=53c38ecfba4342d7a373232ca08317d5"
+        />
 
-        <ProgressStep status="active" label="Profile" />
+        <ProgressStep
+          status="completed"
+          label="Profile"
+          iconSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/f7b50bb7a5618ab27efa839ecddf858e2df8db03?placeholderIfAbsent=true&apiKey=53c38ecfba4342d7a373232ca08317d5"
+        />
 
-        <ProgressStep status="pending" label="Application" />
+        <ProgressStep
+          status="completed"
+          label="Application"
+          iconSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/f7b50bb7a5618ab27efa839ecddf858e2df8db03?placeholderIfAbsent=true&apiKey=53c38ecfba4342d7a373232ca08317d5"
+        />
       </div>
     </section>
   );

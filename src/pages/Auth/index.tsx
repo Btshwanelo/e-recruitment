@@ -83,12 +83,12 @@ const AuthPage = () => {
             password: loginPassword,
           },
         }).unwrap();
-        
+
         console.log('Authentication successful:', result);
-        
+
         // Save auth data immediately
         dispatch(setAuthData(result));
-        
+
         // Then fetch user details
         try {
           const userDetails = await retrieveCurrentUser({
@@ -97,7 +97,7 @@ const AuthPage = () => {
               inputParamters: { ExternalLogonId: result.user.externalLogonId },
             },
           }).unwrap();
-          
+
           console.log('User details retrieved:', userDetails);
           dispatch(updateProfileDetails(userDetails));
           navigate('/dashboard');
@@ -153,7 +153,7 @@ const AuthPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
       {/* Logo */}
       <div className="mb-2">
-        <img src="/pic-logo-small.png" alt="RHS Services Logo" className="h-20" />
+        <img src="/dcs-logo.png" alt="DCS Services Logo" className="h-20" />
       </div>
 
       <div className="w-full max-w-md">
@@ -204,7 +204,7 @@ const AuthPage = () => {
 
         {authProps.isError && (
           <div className="p-3 mb-4 text-sm rounded bg-red-100 text-red-700 flex items-center">
-            <AlertCircle size={16} className="mr-2" /> 
+            <AlertCircle size={16} className="mr-2" />
             {authProps.error?.data?.message || 'Login failed. Please check your credentials.'}
           </div>
         )}
