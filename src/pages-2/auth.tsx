@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,26 @@ const AuthPageV2 = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
   // Form errors
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{
+    email?: string;
+    phone?: string;
+    idNumber?: string;
+    firstName?: string;
+    lastName?: string;
+    password?: string;
+    confirmPassword?: string;
+    loginEmail?: string;
+    loginPassword?: string;
+    signup?: string;
+    auth?: string;
+  }>({});
   const [isLoading, setIsLoading] = useState(false);
 
   // Navigation
@@ -29,11 +44,26 @@ const AuthPageV2 = () => {
 
   // Form validation
   const validateSignupForm = () => {
-    const newErrors = {};
+    const newErrors: {
+      email?: string;
+      phone?: string;
+      idNumber?: string;
+      firstName?: string;
+      lastName?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
     if (!email) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
 
     if (!phone) newErrors.phone = 'Phone number is required';
+
+    if (!idNumber) newErrors.idNumber = 'ID number is required';
+    else if (idNumber.length < 13) newErrors.idNumber = 'ID number must be at least 13 digits';
+
+    if (!firstName) newErrors.firstName = 'First name is required';
+
+    if (!lastName) newErrors.lastName = 'Last name is required';
 
     if (!password) newErrors.password = 'Password is required';
     else if (password.length < 8) newErrors.password = 'Password must be at least 8 characters';
@@ -46,7 +76,10 @@ const AuthPageV2 = () => {
   };
 
   const validateLoginForm = () => {
-    const newErrors = {};
+    const newErrors: {
+      loginEmail?: string;
+      loginPassword?: string;
+    } = {};
     if (!loginEmail) newErrors.loginEmail = 'Email is required';
     if (!loginPassword) newErrors.loginPassword = 'Password is required';
 
@@ -55,7 +88,7 @@ const AuthPageV2 = () => {
   };
 
   // Handle login with dummy data
-  const handleLogin = (e) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateLoginForm()) {
       setIsLoading(true);
@@ -74,7 +107,7 @@ const AuthPageV2 = () => {
   };
 
   // Handle signup with dummy data
-  const handleSignup = (e) => {
+  const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateSignupForm()) {
       setIsLoading(true);
@@ -82,14 +115,14 @@ const AuthPageV2 = () => {
       // Simulate API call delay
       setTimeout(() => {
         // In a real app, this would create a new user in your backend
-        navigate(`/verification?e=${email}&&c=${phone}`);
+        navigate(`/verification?e=${email}&&c=${phone}&&id=${idNumber}&&fn=${firstName}&&ln=${lastName}`);
         setIsLoading(false);
       }, 1000);
     }
   };
 
   // Clear errors when switching tabs
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setErrors({});
   };
@@ -165,6 +198,59 @@ const AuthPageV2 = () => {
                 className={`w-full ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               />
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name
+                </label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  placeholder="Enter first name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className={`w-full ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
+                />
+                {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name
+                </label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Enter last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  className={`w-full ${errors.lastName ? 'border-red-500' : 'border-gray-300'}`}
+                />
+                {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                ID Number
+              </label>
+              <Input
+                id="idNumber"
+                name="idNumber"
+                type="text"
+                placeholder="Enter your ID number"
+                value={idNumber}
+                onChange={(e) => setIdNumber(e.target.value)}
+                required
+                className={`w-full ${errors.idNumber ? 'border-red-500' : 'border-gray-300'}`}
+              />
+              {errors.idNumber && <p className="mt-1 text-sm text-red-600">{errors.idNumber}</p>}
             </div>
 
             <div>

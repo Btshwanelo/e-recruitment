@@ -43,7 +43,7 @@ export const OTPNotification = () => {
 
         {/* Action Button */}
         <Button
-          className="w-full bg-[#0288D1] hover:bg-[#0277BD] font-semibold text-white py-6"
+          className="w-full bg-[#005f33]  hover:bg-[#0277BD] font-semibold text-white py-6"
           onClick={handleEnterManually}
         >
           Enter code manually
@@ -214,7 +214,7 @@ export const OTPInput = () => {
         <Button
           className={`w-full py-6 ${
             isOtpComplete && !isVerifying
-              ? 'bg-[#0288D1] hover:bg-[#0277BD] font-semibold text-white'
+              ? 'bg-[#005f33]  hover:bg-[#005f33]  font-semibold text-white'
               : 'bg-[#E0E0E0] text-gray-500 cursor-not-allowed'
           }`}
           onClick={handleVerify}
@@ -226,7 +226,7 @@ export const OTPInput = () => {
         {/* Resend Link */}
         <p className="mt-4 text-sm text-gray-600">
           Didn't receive the OTP?
-          <button className="ml-1 text-[#0288D1] font-semibold hover:underline" onClick={handleResend} disabled={isResending}>
+          <button className="ml-1 text-[#005f33]  font-semibold hover:underline" onClick={handleResend} disabled={isResending}>
             {isResending ? 'Resending...' : 'Click to resend'}
           </button>
         </p>
@@ -262,7 +262,7 @@ export const VerificationSuccess = () => {
         <p className="text-gray-600 text-center mb-8">Your phone number has been successfully verified. You can now access your account.</p>
 
         {/* Continue Button */}
-        <Button className="w-full bg-[#0288D1] hover:bg-[#0277BD] font-semibold text-white py-6" onClick={handleContinue}>
+        <Button className="w-full bg-[#005f33]  hover:bg-[#005f33]  font-semibold text-white py-6" onClick={handleContinue}>
           Continue to Profile
         </Button>
       </div>

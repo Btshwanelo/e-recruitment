@@ -1,8 +1,19 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 const HeaderV2 = () => {
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear any stored authentication data if needed
+    // localStorage.removeItem('token');
+    // localStorage.removeItem('user');
+
+    // Redirect to login page
+    navigate('/');
+  };
+
   return (
     <header className="bg-white py-4 shadow-sm">
       <div className="container mx-auto px-4 flex items-center justify-between">
@@ -23,6 +34,17 @@ const HeaderV2 = () => {
             </a>
             {/* <a href="#" className="text-[#475467] font-semibold hover:text-[#]">Contact Us</a> */}
           </nav>
+        </div>
+
+        <div className="flex items-center">
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="flex items-center space-x-2 bg-white border border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </Button>
         </div>
       </div>
     </header>

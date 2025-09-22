@@ -4,30 +4,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Check, CircleUser, Upload, FileText, X, AlertCircle } from 'lucide-react';
+import { Upload, FileText, X, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HeaderV2 from './Header';
 import { useNavigate } from 'react-router-dom';
 
+const ProgressStepsProgressIconsCentered = ({ currentStep }: { currentStep: string }) => {
+  const steps = [
+    { id: 'personal', label: 'Personal Info', number: 1 },
+    { id: 'contact', label: 'Contact Info', number: 2 },
+    { id: 'qualifications', label: 'Qualifications', number: 3 },
+    { id: 'work-experience', label: 'Work Experience', number: 4 },
+    { id: 'cv', label: 'CV Upload', number: 5 },
+  ];
 
-const ProgressStepsProgressIconsCentered = () => (
-  <div className="flex items-center justify-center space-x-4 mb-6">
-    <div className="flex items-center">
-      <div className="bg-[#005f33] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">1</div>
-      <span className="ml-2 text-sm text-[#005f33]">Personal Info</span>
+  const getCurrentStepIndex = () => {
+    return steps.findIndex((step) => step.id === currentStep);
+  };
+
+  const currentStepIndex = getCurrentStepIndex();
+
+  return (
+    <div className="flex items-center justify-center space-x-2 mb-6 overflow-x-auto">
+      {steps.map((step, index) => (
+        <div key={step.id} className="flex items-center">
+          <div className="flex items-center">
+            <div
+              className={`rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium ${
+                index <= currentStepIndex ? 'bg-[#005f33] text-white' : 'bg-gray-200 text-gray-600'
+              }`}
+            >
+              {step.number}
+            </div>
+            <span className={`ml-2 text-sm whitespace-nowrap ${index <= currentStepIndex ? 'text-[#005f33]' : 'text-gray-600'}`}>
+              {step.label}
+            </span>
+          </div>
+          {index < steps.length - 1 && <div className={`w-8 h-px ml-2 ${index < currentStepIndex ? 'bg-[#005f33]' : 'bg-gray-300'}`}></div>}
+        </div>
+      ))}
     </div>
-    <div className="w-12 h-px bg-gray-300"></div>
-    <div className="flex items-center">
-      <div className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">2</div>
-      <span className="ml-2 text-sm text-gray-600">Contact Info</span>
-    </div>
-    <div className="w-12 h-px bg-gray-300"></div>
-    <div className="flex items-center">
-      <div className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">3</div>
-      <span className="ml-2 text-sm text-gray-600">CV Upload</span>
-    </div>
-  </div>
-);
+  );
+};
 
 const Footer = () => (
   <footer className="bg-[#005f33] text-white w-full py-6 mt-10">
@@ -56,6 +74,28 @@ interface FileUploadError {
 }
 
 // Form data interfaces
+interface Language {
+  id: string;
+  language: string;
+  proficiency: string;
+}
+
+interface Qualification {
+  id: string;
+  qualification: string;
+  institution: string;
+  yearObtained: string;
+}
+
+interface WorkExperience {
+  id: string;
+  companyName: string;
+  position: string;
+  fromDate: string;
+  toDate: string;
+  reasonForLeaving: string;
+}
+
 interface ProfileFormData {
   firstName: string;
   initial: string;
@@ -68,12 +108,22 @@ interface ProfileFormData {
   gender: string;
   passportNumber: string;
   rightToWork: string;
+  disabilityStatus: string;
+  disabilityNature: string;
+  languages: Language[];
+  qualifications: Qualification[];
+  workExperience: WorkExperience[];
 }
 
 interface ContactFormData {
   email: string;
   mobileNumber: string;
   alternativeNumber: string;
+  streetAddress: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
 }
 
 // Dummy data
@@ -89,12 +139,45 @@ const dummyPersonalInfo: ProfileFormData = {
   gender: 'Female',
   passportNumber: 'AB123456',
   rightToWork: 'South African Citizen',
+  disabilityStatus: 'No',
+  disabilityNature: '',
+  languages: [
+    { id: '1', language: 'English', proficiency: 'Fluent' },
+    { id: '2', language: 'Zulu', proficiency: 'Native' },
+  ],
+  qualifications: [
+    { id: '1', qualification: "Bachelor's Degree", institution: 'University of Cape Town', yearObtained: '2015' },
+    { id: '2', qualification: 'National Senior Certificate (NSC)', institution: 'Rondebosch Boys High School', yearObtained: '2011' },
+  ],
+  workExperience: [
+    {
+      id: '1',
+      companyName: 'ABC Corporation',
+      position: 'Software Developer',
+      fromDate: '2020-01-01',
+      toDate: '2023-12-31',
+      reasonForLeaving: 'Career advancement opportunity',
+    },
+    {
+      id: '2',
+      companyName: 'XYZ Tech',
+      position: 'Junior Developer',
+      fromDate: '2018-06-01',
+      toDate: '2019-12-31',
+      reasonForLeaving: 'Better growth prospects',
+    },
+  ],
 };
 
 const dummyContactInfo: ContactFormData = {
   email: 'zizipho.nceku@example.com',
   mobileNumber: '082 123 4567',
   alternativeNumber: '011 555 1234',
+  streetAddress: '123 Main Street, Rosebank',
+  city: 'Johannesburg',
+  province: 'Gauteng',
+  postalCode: '2196',
+  country: 'South Africa',
 };
 
 const ProfilePage: React.FC = () => {
@@ -117,7 +200,27 @@ const ProfilePage: React.FC = () => {
   const documentsFileInputRef = useRef<HTMLInputElement>(null);
 
   // Mock navigate function
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  // Step navigation logic
+  const getNextStep = (currentStep: string): string => {
+    const stepOrder = ['personal', 'contact', 'qualifications', 'work-experience', 'cv'];
+    const currentIndex = stepOrder.indexOf(currentStep);
+    return currentIndex < stepOrder.length - 1 ? stepOrder[currentIndex + 1] : 'cv';
+  };
+
+  const handleStepSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nextStep = getNextStep(activeTab);
+
+    if (nextStep === 'cv') {
+      // After CV step, navigate to jobs
+      navigate('/jobs');
+    } else {
+      // Move to next step
+      setActiveTab(nextStep);
+    }
+  };
 
   // File validation
   const validateFile = (file: File, isCV: boolean = false): FileUploadError | null => {
@@ -294,6 +397,98 @@ const ProfilePage: React.FC = () => {
     setPersonalFormData((prev) => ({ ...prev, title: value }));
   };
 
+  const handleDisabilityStatusChange = (value: string) => {
+    setPersonalFormData((prev) => ({
+      ...prev,
+      disabilityStatus: value,
+      disabilityNature: value === 'No' ? '' : prev.disabilityNature,
+    }));
+  };
+
+  const handleLanguageAdd = () => {
+    const newLanguage: Language = {
+      id: Date.now().toString(),
+      language: '',
+      proficiency: '',
+    };
+    setPersonalFormData((prev) => ({
+      ...prev,
+      languages: [...prev.languages, newLanguage],
+    }));
+  };
+
+  const handleLanguageChange = (id: string, field: 'language' | 'proficiency', value: string) => {
+    setPersonalFormData((prev) => ({
+      ...prev,
+      languages: prev.languages.map((lang) => (lang.id === id ? { ...lang, [field]: value } : lang)),
+    }));
+  };
+
+  const handleLanguageRemove = (id: string) => {
+    setPersonalFormData((prev) => ({
+      ...prev,
+      languages: prev.languages.filter((lang) => lang.id !== id),
+    }));
+  };
+
+  // Qualification handlers
+  const handleQualificationAdd = () => {
+    const newQualification: Qualification = {
+      id: Date.now().toString(),
+      qualification: '',
+      institution: '',
+      yearObtained: '',
+    };
+    setPersonalFormData((prev) => ({
+      ...prev,
+      qualifications: [...prev.qualifications, newQualification],
+    }));
+  };
+
+  const handleQualificationChange = (id: string, field: 'qualification' | 'institution' | 'yearObtained', value: string) => {
+    setPersonalFormData((prev) => ({
+      ...prev,
+      qualifications: prev.qualifications.map((qual) => (qual.id === id ? { ...qual, [field]: value } : qual)),
+    }));
+  };
+
+  const handleQualificationRemove = (id: string) => {
+    setPersonalFormData((prev) => ({
+      ...prev,
+      qualifications: prev.qualifications.filter((qual) => qual.id !== id),
+    }));
+  };
+
+  // Work Experience handlers
+  const handleWorkExperienceAdd = () => {
+    const newWorkExperience: WorkExperience = {
+      id: Date.now().toString(),
+      companyName: '',
+      position: '',
+      fromDate: '',
+      toDate: '',
+      reasonForLeaving: '',
+    };
+    setPersonalFormData((prev) => ({
+      ...prev,
+      workExperience: [...prev.workExperience, newWorkExperience],
+    }));
+  };
+
+  const handleWorkExperienceChange = (id: string, field: keyof WorkExperience, value: string) => {
+    setPersonalFormData((prev) => ({
+      ...prev,
+      workExperience: prev.workExperience.map((work) => (work.id === id ? { ...work, [field]: value } : work)),
+    }));
+  };
+
+  const handleWorkExperienceRemove = (id: string) => {
+    setPersonalFormData((prev) => ({
+      ...prev,
+      workExperience: prev.workExperience.filter((work) => work.id !== id),
+    }));
+  };
+
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setContactFormData((prev) => ({ ...prev, [name]: value }));
@@ -307,8 +502,8 @@ const ProfilePage: React.FC = () => {
     console.log('CV File:', cvFile);
     console.log('Documents:', documents);
 
-    // In a real app, you would upload files to a server here
-    navigate('/jobs');
+    // Use step navigation logic
+    handleStepSave(e);
   };
 
   // Clear errors
@@ -333,7 +528,7 @@ const ProfilePage: React.FC = () => {
         </Card>
 
         <div className="mb-8">
-          <ProgressStepsProgressIconsCentered />
+          <ProgressStepsProgressIconsCentered currentStep={activeTab} />
         </div>
 
         {/* Error Display */}
@@ -376,6 +571,22 @@ const ProfilePage: React.FC = () => {
                 }`}
               >
                 Contact Info
+              </button>
+              <button
+                onClick={() => setActiveTab('qualifications')}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 w-full ${
+                  activeTab === 'qualifications' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Qualifications
+              </button>
+              <button
+                onClick={() => setActiveTab('work-experience')}
+                className={`block font-semibold rounded-md text-left pl-3 py-2 w-full ${
+                  activeTab === 'work-experience' ? 'text-[#005f33] bg-[#F6F9FE]' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Work Experience
               </button>
               <button
                 onClick={() => setActiveTab('cv')}
@@ -523,7 +734,7 @@ const ProfilePage: React.FC = () => {
                             className="w-full"
                           />
                         </div>
-                        <div className="space-y-2 md:col-span-2">
+                        <div className="space-y-2">
                           <Label htmlFor="rightToWork">Right to Work status</Label>
                           <Select
                             value={personalFormData.rightToWork}
@@ -540,6 +751,93 @@ const ProfilePage: React.FC = () => {
                             </SelectContent>
                           </Select>
                         </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="disabilityStatus">Disability Status</Label>
+                          <Select value={personalFormData.disabilityStatus} onValueChange={handleDisabilityStatusChange}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select disability status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="No">No</SelectItem>
+                              <SelectItem value="Yes">Yes</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {personalFormData.disabilityStatus === 'Yes' && (
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="disabilityNature">Nature of Disability</Label>
+                            <Input
+                              id="disabilityNature"
+                              name="disabilityNature"
+                              value={personalFormData.disabilityNature}
+                              onChange={handlePersonalChange}
+                              placeholder="Please describe the nature of your disability"
+                              className="w-full"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Languages Section */}
+                      <div className="mt-8">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-medium">Languages & Proficiency</h3>
+                          <Button type="button" onClick={handleLanguageAdd} className="bg-[#005f33] hover:bg-[#005f33] text-white">
+                            Add Language
+                          </Button>
+                        </div>
+
+                        {personalFormData.languages.map((language) => (
+                          <div
+                            key={language.id}
+                            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 border border-gray-200 rounded-lg"
+                          >
+                            <div className="space-y-2">
+                              <Label htmlFor={`language-${language.id}`}>Language</Label>
+                              <Input
+                                id={`language-${language.id}`}
+                                value={language.language}
+                                onChange={(e) => handleLanguageChange(language.id, 'language', e.target.value)}
+                                placeholder="Enter language"
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`proficiency-${language.id}`}>Proficiency Level</Label>
+                              <Select
+                                value={language.proficiency}
+                                onValueChange={(value) => handleLanguageChange(language.id, 'proficiency', value)}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select proficiency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Native">Native</SelectItem>
+                                  <SelectItem value="Fluent">Fluent</SelectItem>
+                                  <SelectItem value="Advanced">Advanced</SelectItem>
+                                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                  <SelectItem value="Basic">Basic</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-end">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => handleLanguageRemove(language.id)}
+                                className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {personalFormData.languages.length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            <p>No languages added yet. Click "Add Language" to get started.</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300">
@@ -547,7 +845,7 @@ const ProfilePage: React.FC = () => {
                           Cancel
                         </Button>
                         <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                          Save
+                          Next Step
                         </Button>
                       </div>
                     </form>
@@ -599,12 +897,277 @@ const ProfilePage: React.FC = () => {
                         </div>
                       </div>
 
+                      {/* Residential Address Section */}
+                      <div className="mt-8">
+                        <h3 className="text-lg font-medium mb-4">Residential Address</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="streetAddress">Street Address</Label>
+                            <Input
+                              id="streetAddress"
+                              name="streetAddress"
+                              value={contactFormData.streetAddress}
+                              onChange={handleContactChange}
+                              placeholder="Enter your street address"
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="city">City</Label>
+                            <Input
+                              id="city"
+                              name="city"
+                              value={contactFormData.city}
+                              onChange={handleContactChange}
+                              placeholder="Enter your city"
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="province">Province</Label>
+                            <Select
+                              value={contactFormData.province}
+                              onValueChange={(value) => setContactFormData((prev) => ({ ...prev, province: value }))}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select province" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Eastern Cape">Eastern Cape</SelectItem>
+                                <SelectItem value="Free State">Free State</SelectItem>
+                                <SelectItem value="Gauteng">Gauteng</SelectItem>
+                                <SelectItem value="KwaZulu-Natal">KwaZulu-Natal</SelectItem>
+                                <SelectItem value="Limpopo">Limpopo</SelectItem>
+                                <SelectItem value="Mpumalanga">Mpumalanga</SelectItem>
+                                <SelectItem value="Northern Cape">Northern Cape</SelectItem>
+                                <SelectItem value="North West">North West</SelectItem>
+                                <SelectItem value="Western Cape">Western Cape</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="postalCode">Postal Code</Label>
+                            <Input
+                              id="postalCode"
+                              name="postalCode"
+                              value={contactFormData.postalCode}
+                              onChange={handleContactChange}
+                              placeholder="Enter postal code"
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="country">Country</Label>
+                            <Input
+                              id="country"
+                              name="country"
+                              value={contactFormData.country}
+                              onChange={handleContactChange}
+                              placeholder="Enter country"
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300">
                         <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                           Cancel
                         </Button>
                         <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                          Save
+                          Next Step
+                        </Button>
+                      </div>
+                    </form>
+                  </>
+                )}
+
+                {/* Qualifications Tab */}
+                {activeTab === 'qualifications' && (
+                  <>
+                    <h2 className="text-xl font-semibold mb-2">Qualifications</h2>
+                    <p className="text-gray-500 text-sm mb-6">
+                      Please provide details about your educational qualifications and certifications.
+                    </p>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium">Your Qualifications</h3>
+                        <Button type="button" onClick={handleQualificationAdd} className="bg-[#005f33] hover:bg-[#005f33] text-white">
+                          Add Qualification
+                        </Button>
+                      </div>
+
+                      {personalFormData.qualifications.map((qualification) => (
+                        <div
+                          key={qualification.id}
+                          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 border border-gray-200 rounded-lg"
+                        >
+                          <div className="space-y-2">
+                            <Label htmlFor={`qualification-${qualification.id}`}>Qualification</Label>
+                            <Select
+                              value={qualification.qualification}
+                              onValueChange={(value) => handleQualificationChange(qualification.id, 'qualification', value)}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select qualification" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="National Senior Certificate (NSC)">National Senior Certificate (NSC)</SelectItem>
+                                <SelectItem value="Higher Certificate">Higher Certificate</SelectItem>
+                                <SelectItem value="Diploma">Diploma</SelectItem>
+                                <SelectItem value="Bachelor's Degree">Bachelor's Degree</SelectItem>
+                                <SelectItem value="Honours">Honours</SelectItem>
+                                <SelectItem value="Master's Degree">Master's Degree</SelectItem>
+                                <SelectItem value="Doctorate">Doctorate</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`institution-${qualification.id}`}>Institution</Label>
+                            <Input
+                              id={`institution-${qualification.id}`}
+                              value={qualification.institution}
+                              onChange={(e) => handleQualificationChange(qualification.id, 'institution', e.target.value)}
+                              placeholder="e.g., University of Cape Town"
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`year-${qualification.id}`}>Year Obtained</Label>
+                            <Input
+                              id={`year-${qualification.id}`}
+                              value={qualification.yearObtained}
+                              onChange={(e) => handleQualificationChange(qualification.id, 'yearObtained', e.target.value)}
+                              placeholder="e.g., 2020"
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => handleQualificationRemove(qualification.id)}
+                              className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {personalFormData.qualifications.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <p>No qualifications added yet. Click "Add Qualification" to get started.</p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300">
+                        <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
+                          Next Step
+                        </Button>
+                      </div>
+                    </form>
+                  </>
+                )}
+
+                {/* Work Experience Tab */}
+                {activeTab === 'work-experience' && (
+                  <>
+                    <h2 className="text-xl font-semibold mb-2">Work Experience</h2>
+                    <p className="text-gray-500 text-sm mb-6">Please provide details about your work experience and employment history.</p>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium">Your Work Experience</h3>
+                        <Button type="button" onClick={handleWorkExperienceAdd} className="bg-[#005f33] hover:bg-[#005f33] text-white">
+                          Add Work Experience
+                        </Button>
+                      </div>
+
+                      {personalFormData.workExperience.map((work) => (
+                        <div key={work.id} className="p-4 border border-gray-200 rounded-lg mb-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-2">
+                              <Label htmlFor={`company-${work.id}`}>Company Name</Label>
+                              <Input
+                                id={`company-${work.id}`}
+                                value={work.companyName}
+                                onChange={(e) => handleWorkExperienceChange(work.id, 'companyName', e.target.value)}
+                                placeholder="Enter company name"
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`position-${work.id}`}>Position</Label>
+                              <Input
+                                id={`position-${work.id}`}
+                                value={work.position}
+                                onChange={(e) => handleWorkExperienceChange(work.id, 'position', e.target.value)}
+                                placeholder="Enter your position"
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`fromDate-${work.id}`}>From Date</Label>
+                              <Input
+                                id={`fromDate-${work.id}`}
+                                type="date"
+                                value={work.fromDate}
+                                onChange={(e) => handleWorkExperienceChange(work.id, 'fromDate', e.target.value)}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`toDate-${work.id}`}>To Date</Label>
+                              <Input
+                                id={`toDate-${work.id}`}
+                                type="date"
+                                value={work.toDate}
+                                onChange={(e) => handleWorkExperienceChange(work.id, 'toDate', e.target.value)}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor={`reason-${work.id}`}>Reason for Leaving</Label>
+                              <Input
+                                id={`reason-${work.id}`}
+                                value={work.reasonForLeaving}
+                                onChange={(e) => handleWorkExperienceChange(work.id, 'reasonForLeaving', e.target.value)}
+                                placeholder="Enter reason for leaving"
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => handleWorkExperienceRemove(work.id)}
+                              className="text-red-600 border-red-300 hover:bg-red-50"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {personalFormData.workExperience.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <p>No work experience added yet. Click "Add Work Experience" to get started.</p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300">
+                        <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
+                          Next Step
                         </Button>
                       </div>
                     </form>
@@ -748,8 +1311,8 @@ const ProfilePage: React.FC = () => {
                       <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                         Cancel
                       </Button>
-                      <Button onClick={handleSubmit} className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                        Save
+                      <Button onClick={handleStepSave} className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
+                        Complete Profile
                       </Button>
                     </div>
                   </>

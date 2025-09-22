@@ -7,12 +7,9 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  HelpCircle,
   MoreVertical,
-  SlidersHorizontal,
   Calendar,
   MapPin,
-  Clock,
   Heart,
   Eye,
   ExternalLink,
@@ -39,7 +36,7 @@ const TableBody = ({ children }: { children: React.ReactNode }) => <tbody>{child
 
 const TableRow = ({ children, className }: { children: React.ReactNode; className?: string }) => <tr className={className}>{children}</tr>;
 
-const TableHead = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+const TableHead = ({ children, className }: { children?: React.ReactNode; className?: string }) => (
   <th className={`px-4 py-3 text-left text-sm font-medium text-gray-700 ${className}`}>{children}</th>
 );
 
@@ -61,9 +58,10 @@ const JobListingsPage: React.FC = () => {
   const filteredJobs = jobs.filter(
     (job) =>
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.type.toLowerCase().includes(searchTerm.toLowerCase())
+      job.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (job.postNumber && job.postNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (job.applicationRef && job.applicationRef.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Format date
@@ -203,13 +201,14 @@ const JobListingsPage: React.FC = () => {
                 <TableRow className="bg-gray-50 border-b border-gray-300">
                   <TableHead className="font-medium">
                     <div className="flex items-center">
-                      Job Title
+                      Post
                       <ArrowDown className="ml-1 h-4 w-4" />
                     </div>
                   </TableHead>
-                  <TableHead className="font-medium">Company</TableHead>
-                  <TableHead className="font-medium">Location</TableHead>
+                  <TableHead className="font-medium">Post Number</TableHead>
+                  <TableHead className="font-medium">Location/Center</TableHead>
                   <TableHead className="font-medium">Type</TableHead>
+                  {/* <TableHead className="font-medium">Application Ref</TableHead> */}
                   <TableHead className="font-medium">Closing Date</TableHead>
                   <TableHead className="font-medium">Status</TableHead>
                   <TableHead className="w-10"></TableHead>
@@ -234,7 +233,9 @@ const JobListingsPage: React.FC = () => {
                           {job.title}
                         </button>
                       </TableCell>
-                      <TableCell>{job.company}</TableCell>
+                      <TableCell className="text-gray-600 font-mono text-sm">
+                        {job.postNumber || `REF-${job.id.slice(-6).toUpperCase()}`}
+                      </TableCell>
                       <TableCell className="text-gray-600">
                         <div className="flex items-center">
                           <MapPin className="w-4 h-4 mr-1" />
@@ -242,6 +243,9 @@ const JobListingsPage: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>{getJobTypeBadge(job.type, job.category)}</TableCell>
+                      {/* <TableCell className="text-gray-600 font-mono text-sm">
+                        {job.applicationRef || `APP-${job.id.slice(-8).toUpperCase()}`}
+                      </TableCell> */}
                       <TableCell className="text-gray-600">
                         <div className="flex items-center">
                           <Calendar className="w-4 h-4 mr-1" />

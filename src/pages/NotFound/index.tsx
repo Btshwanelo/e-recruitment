@@ -25,7 +25,7 @@ const NotFound = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-          <Button className=" px-8 bg-[#0086C9] hover:bg-[#2a6b8b] " variant="default" onClick={() => navigate('/dashboard')}>
+          <Button className=" px-8 bg-[#0086C9] hover:bg-[#2a6b8b] " variant="default" onClick={() => navigate('/applications')}>
             ← Go To Home
           </Button>
         </div>
