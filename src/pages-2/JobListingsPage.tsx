@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  MoreVertical,
   Calendar,
   MapPin,
   Heart,
@@ -211,7 +209,7 @@ const JobListingsPage: React.FC = () => {
                   {/* <TableHead className="font-medium">Application Ref</TableHead> */}
                   <TableHead className="font-medium">Closing Date</TableHead>
                   <TableHead className="font-medium">Status</TableHead>
-                  <TableHead className="w-10"></TableHead>
+                  <TableHead className="font-medium text-center bg-gray-50">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -227,7 +225,7 @@ const JobListingsPage: React.FC = () => {
                       <TableCell className="font-medium">
                         <button
                           onClick={() => handleViewJob(job.id)}
-                          className="text-[#005f33] hover:underline text-left flex items-center"
+                          className="text-[#005f33] hover:underline hover:text-[#004d2a] text-left flex items-center font-medium transition-colors duration-200"
                         >
                           <JobTypeIcon className="w-4 h-4 mr-2 text-gray-500" />
                           {job.title}
@@ -259,35 +257,52 @@ const JobListingsPage: React.FC = () => {
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Open</span>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
+                      <TableCell className="text-center bg-gray-50">
+                        <div className="flex items-center justify-center gap-2">
+                          {/* Primary Action Button - Apply or View Application */}
+                          {!hasApplied ? (
+                            <Button
+                              onClick={() => handleApplyJob(job.id)}
+                              className="bg-[#005f33] hover:bg-[#004d2a] text-white text-sm font-semibold px-5 py-2 h-9 shadow-sm hover:shadow-md transition-all duration-200"
+                            >
+                              <ExternalLink className="w-4 h-4 mr-1" />
+                              Apply Now
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleViewJob(job.id)}>
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            {!hasApplied ? (
-                              <DropdownMenuItem onClick={() => handleApplyJob(job.id)}>
-                                <ExternalLink className="w-4 h-4 mr-2" />
-                                Apply Now
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => navigate('/applications')}>
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Application
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => handleToggleFavorite(job.id)}>
-                              <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600 text-red-600' : ''}`} />
-                              {job.isFavorite ? 'Remove from Favorites' : 'Save Job'}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          ) : (
+                            <Button
+                              onClick={() => navigate('/applications')}
+                              variant="outline"
+                              className="border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white text-sm font-medium px-4 py-2 h-8"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View App
+                            </Button>
+                          )}
+                          
+                          {/* Secondary Action Button - View Details */}
+                          <Button
+                            onClick={() => handleViewJob(job.id)}
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-300 text-gray-600 hover:bg-gray-50 h-8 w-8 p-0"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          
+                          {/* Favorite Button */}
+                          <Button
+                            onClick={() => handleToggleFavorite(job.id)}
+                            variant="outline"
+                            size="sm"
+                            className={`border-gray-300 hover:bg-gray-50 h-8 w-8 p-0 ${
+                              job.isFavorite ? 'text-red-600 border-red-300' : 'text-gray-600'
+                            }`}
+                            title={job.isFavorite ? 'Remove from Favorites' : 'Save Job'}
+                          >
+                            <Heart className={`w-4 h-4 ${job.isFavorite ? 'fill-red-600' : ''}`} />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

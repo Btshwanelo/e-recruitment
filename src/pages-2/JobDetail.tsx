@@ -19,6 +19,8 @@ const JobDetailPage: React.FC = () => {
   const [isEmployed, setIsEmployed] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [applicationRef, setApplicationRef] = useState<string>('');
 
   // Criminal offence questions
   const [criminalOffence, setCriminalOffence] = useState<string | null>(null);
@@ -79,12 +81,78 @@ const JobDetailPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  // Validation function
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    if (!educationLevel) errors.push('education');
+    if (!isEmployed) errors.push('isEmployed');
+    if (!criminalOffence) errors.push('criminalOffence');
+    if (!pendingCriminalCase) errors.push('pendingCriminalCase');
+    if (!dismissedForMisconduct) errors.push('dismissedForMisconduct');
+    if (!pendingDisciplinaryCase) errors.push('pendingDisciplinaryCase');
+    if (!resignedPendingDisciplinary) errors.push('resignedPendingDisciplinary');
+    if (!dischargedOnIllHealth) errors.push('dischargedOnIllHealth');
+    if (!businessWithState) errors.push('businessWithState');
+    if (businessWithState === 'yes' && !relinquishBusinessInterests) errors.push('relinquishBusinessInterests');
+    if (!privateSectorExperience) errors.push('privateSectorExperience');
+    if (!publicSectorExperience) errors.push('publicSectorExperience');
+    
+    return errors;
+  };
+
+  // Scroll to first missing field
+  const scrollToFirstError = (errors: string[]) => {
+    if (errors.length > 0) {
+      const firstError = errors[0];
+      const element = document.getElementById(firstError);
+      
+      if (element) {
+        // Scroll the element into view within the modal
+        element.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+        
+        // Focus the first radio button or input in the field
+        setTimeout(() => {
+          const firstInput = element.querySelector('input[type="radio"], input[type="text"], input[type="number"], select');
+          if (firstInput) {
+            (firstInput as HTMLElement).focus();
+          }
+        }, 300);
+      }
+    }
+  };
+
+  // Check if field has validation error
+  const hasError = (fieldName: string) => {
+    return validationErrors.includes(fieldName);
+  };
+
   const handleSubmitApplication = async () => {
+    // Clear previous validation errors
+    setValidationErrors([]);
+    
+    // Validate form
+    const errors = validateForm();
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      scrollToFirstError(errors);
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    // Generate application reference number
+    const generatedApplicationRef = `APP-${Date.now().toString().slice(-8)}-${job.postNumber || job.id.slice(-4).toUpperCase()}`;
+    setApplicationRef(generatedApplicationRef);
+    
     // Create application
     const newApplication = {
       id: `app_${Date.now()}`,
@@ -93,6 +161,7 @@ const JobDetailPage: React.FC = () => {
       company: job.company,
       appliedDate: new Date().toISOString().split('T')[0],
       status: 'submitted' as const,
+      applicationRef: generatedApplicationRef,
       educationLevel,
       isEmployed: isEmployed || '',
       applicationData: {
@@ -120,11 +189,6 @@ const JobDetailPage: React.FC = () => {
 
     setIsSubmitting(false);
     setShowSuccess(true);
-
-    // Navigate to applications page after showing success for 2 seconds
-    setTimeout(() => {
-      navigate('/applications');
-    }, 2000);
   };
 
   const handleCloseModal = () => {
@@ -133,6 +197,8 @@ const JobDetailPage: React.FC = () => {
     setEducationLevel('');
     setIsEmployed(null);
     setIsSubmitting(false);
+    setValidationErrors([]);
+    setApplicationRef('');
 
     // Reset all new form fields
     setCriminalOffence(null);
@@ -160,6 +226,11 @@ const JobDetailPage: React.FC = () => {
     navigate('/applications');
   };
 
+  const handleSuccessOK = () => {
+    handleCloseModal();
+    navigate('/applications');
+  };
+
   // Format date
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-GB', {
@@ -180,7 +251,7 @@ const JobDetailPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <HeaderV2 />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24">
         {/* Title Card */}
         <Card
           className="w-full min-h-[180px] mb-10 text-white border-none"
@@ -416,11 +487,36 @@ const JobDetailPage: React.FC = () => {
                 <DialogTitle className="text-xl font-semibold">Complete Your Application</DialogTitle>
               </DialogHeader>
 
+              {validationErrors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mx-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        Please complete all required fields
+                      </h3>
+                      <p className="text-sm text-red-700 mt-1">
+                        {validationErrors.length} field{validationErrors.length !== 1 ? 's' : ''} still need{validationErrors.length === 1 ? 's' : ''} to be completed.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-6 py-4 max-h-96 overflow-y-auto">
                 <div className="space-y-2">
-                  <Label htmlFor="education">What is your Highest Education Level?</Label>
+                  <Label htmlFor="education" className={hasError('education') ? 'text-red-600' : ''}>
+                    What is your Highest Education Level? {hasError('education') && <span className="text-red-500">*</span>}
+                  </Label>
                   <Select value={educationLevel} onValueChange={setEducationLevel}>
-                    <SelectTrigger id="education" className="w-full">
+                    <SelectTrigger 
+                      id="education" 
+                      className={`w-full ${hasError('education') ? 'border-red-500 focus:border-red-500' : ''}`}
+                    >
                       <SelectValue placeholder="Select your education level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -435,8 +531,10 @@ const JobDetailPage: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-3">
-                  <Label>Are you currently employed?</Label>
+                <div className="space-y-3" id="isEmployed">
+                  <Label className={hasError('isEmployed') ? 'text-red-600' : ''}>
+                    Are you currently employed? {hasError('isEmployed') && <span className="text-red-500">*</span>}
+                  </Label>
                   <RadioGroup value={isEmployed || ''} onValueChange={setIsEmployed}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes" id="employed-yes" />
@@ -450,8 +548,10 @@ const JobDetailPage: React.FC = () => {
                 </div>
 
                 {/* Criminal Offence Questions */}
-                <div className="space-y-3">
-                  <Label>Have you been convicted or found guilty of a criminal offence (including an admission of guilt)?</Label>
+                <div className="space-y-3" id="criminalOffence">
+                  <Label className={hasError('criminalOffence') ? 'text-red-600' : ''}>
+                    Have you been convicted or found guilty of a criminal offence (including an admission of guilt)? {hasError('criminalOffence') && <span className="text-red-500">*</span>}
+                  </Label>
                   <RadioGroup value={criminalOffence || ''} onValueChange={setCriminalOffence}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes" id="criminal-yes" />
@@ -476,8 +576,10 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="space-y-3">
-                  <Label>Do you have any pending criminal case against you?</Label>
+                <div className="space-y-3" id="pendingCriminalCase">
+                  <Label className={hasError('pendingCriminalCase') ? 'text-red-600' : ''}>
+                    Do you have any pending criminal case against you? {hasError('pendingCriminalCase') && <span className="text-red-500">*</span>}
+                  </Label>
                   <RadioGroup value={pendingCriminalCase || ''} onValueChange={setPendingCriminalCase}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes" id="pending-criminal-yes" />
@@ -503,8 +605,10 @@ const JobDetailPage: React.FC = () => {
                 </div>
 
                 {/* Dismissal and Disciplinary Questions */}
-                <div className="space-y-3">
-                  <Label>Have you ever been dismissed for misconduct from the Public Service?</Label>
+                <div className="space-y-3" id="dismissedForMisconduct">
+                  <Label className={hasError('dismissedForMisconduct') ? 'text-red-600' : ''}>
+                    Have you ever been dismissed for misconduct from the Public Service? {hasError('dismissedForMisconduct') && <span className="text-red-500">*</span>}
+                  </Label>
                   <RadioGroup value={dismissedForMisconduct || ''} onValueChange={setDismissedForMisconduct}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes" id="dismissed-yes" />
@@ -529,8 +633,10 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="space-y-3">
-                  <Label>Do you have any pending disciplinary case against you?</Label>
+                <div className="space-y-3" id="pendingDisciplinaryCase">
+                  <Label className={hasError('pendingDisciplinaryCase') ? 'text-red-600' : ''}>
+                    Do you have any pending disciplinary case against you? {hasError('pendingDisciplinaryCase') && <span className="text-red-500">*</span>}
+                  </Label>
                   <RadioGroup value={pendingDisciplinaryCase || ''} onValueChange={setPendingDisciplinaryCase}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes" id="pending-disciplinary-yes" />
@@ -556,8 +662,10 @@ const JobDetailPage: React.FC = () => {
                 </div>
 
                 {/* Resignation Question */}
-                <div className="space-y-3">
-                  <Label>Have you resigned from a recent job pending any disciplinary proceeding against you?</Label>
+                <div className="space-y-3" id="resignedPendingDisciplinary">
+                  <Label className={hasError('resignedPendingDisciplinary') ? 'text-red-600' : ''}>
+                    Have you resigned from a recent job pending any disciplinary proceeding against you? {hasError('resignedPendingDisciplinary') && <span className="text-red-500">*</span>}
+                  </Label>
                   <RadioGroup value={resignedPendingDisciplinary || ''} onValueChange={setResignedPendingDisciplinary}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes" id="resigned-yes" />
@@ -571,10 +679,10 @@ const JobDetailPage: React.FC = () => {
                 </div>
 
                 {/* Discharge/Retirement Question */}
-                <div className="space-y-3">
-                  <Label>
+                <div className="space-y-3" id="dischargedOnIllHealth">
+                  <Label className={hasError('dischargedOnIllHealth') ? 'text-red-600' : ''}>
                     Have you been discharged or retired from the Public Service on grounds of Ill-health or on condition that you cannot be
-                    re-employed?
+                    re-employed? {hasError('dischargedOnIllHealth') && <span className="text-red-500">*</span>}
                   </Label>
                   <RadioGroup value={dischargedOnIllHealth || ''} onValueChange={setDischargedOnIllHealth}>
                     <div className="flex items-center space-x-2">
@@ -589,10 +697,10 @@ const JobDetailPage: React.FC = () => {
                 </div>
 
                 {/* Business Interests Questions */}
-                <div className="space-y-3">
-                  <Label>
+                <div className="space-y-3" id="businessWithState">
+                  <Label className={hasError('businessWithState') ? 'text-red-600' : ''}>
                     Are you conducting business with the State or are you a Director of a Public or Private company conducting business with
-                    the State?
+                    the State? {hasError('businessWithState') && <span className="text-red-500">*</span>}
                   </Label>
                   <RadioGroup value={businessWithState || ''} onValueChange={setBusinessWithState}>
                     <div className="flex items-center space-x-2">
@@ -619,9 +727,9 @@ const JobDetailPage: React.FC = () => {
                 </div>
 
                 {businessWithState === 'yes' && (
-                  <div className="space-y-3">
-                    <Label>
-                      In the event that you are employed in the Public Service, will you immediately relinquish such business interests?
+                  <div className="space-y-3" id="relinquishBusinessInterests">
+                    <Label className={hasError('relinquishBusinessInterests') ? 'text-red-600' : ''}>
+                      In the event that you are employed in the Public Service, will you immediately relinquish such business interests? {hasError('relinquishBusinessInterests') && <span className="text-red-500">*</span>}
                     </Label>
                     <RadioGroup value={relinquishBusinessInterests || ''} onValueChange={setRelinquishBusinessInterests}>
                       <div className="flex items-center space-x-2">
@@ -641,25 +749,29 @@ const JobDetailPage: React.FC = () => {
                   <Label>Please specify the total number of years of experience you have:</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="private-experience">Private Sector</Label>
+                      <Label htmlFor="private-experience" className={hasError('privateSectorExperience') ? 'text-red-600' : ''}>
+                        Private Sector {hasError('privateSectorExperience') && <span className="text-red-500">*</span>}
+                      </Label>
                       <Input
                         id="private-experience"
                         type="number"
                         value={privateSectorExperience}
                         onChange={(e) => setPrivateSectorExperience(e.target.value)}
                         placeholder="Years"
-                        className="w-full"
+                        className={`w-full ${hasError('privateSectorExperience') ? 'border-red-500 focus:border-red-500' : ''}`}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="public-experience">Public Sector</Label>
+                      <Label htmlFor="public-experience" className={hasError('publicSectorExperience') ? 'text-red-600' : ''}>
+                        Public Sector {hasError('publicSectorExperience') && <span className="text-red-500">*</span>}
+                      </Label>
                       <Input
                         id="public-experience"
                         type="number"
                         value={publicSectorExperience}
                         onChange={(e) => setPublicSectorExperience(e.target.value)}
                         placeholder="Years"
-                        className="w-full"
+                        className={`w-full ${hasError('publicSectorExperience') ? 'border-red-500 focus:border-red-500' : ''}`}
                       />
                     </div>
                   </div>
@@ -673,21 +785,7 @@ const JobDetailPage: React.FC = () => {
                 <Button
                   onClick={handleSubmitApplication}
                   className="bg-[#005f33] border-none text-white"
-                  disabled={
-                    !educationLevel ||
-                    !isEmployed ||
-                    !criminalOffence ||
-                    !pendingCriminalCase ||
-                    !dismissedForMisconduct ||
-                    !pendingDisciplinaryCase ||
-                    !resignedPendingDisciplinary ||
-                    !dischargedOnIllHealth ||
-                    !businessWithState ||
-                    (businessWithState === 'yes' && !relinquishBusinessInterests) ||
-                    !privateSectorExperience ||
-                    !publicSectorExperience ||
-                    isSubmitting
-                  }
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </Button>
@@ -700,21 +798,110 @@ const JobDetailPage: React.FC = () => {
               </DialogHeader>
 
               <div className="py-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="bg-green-100 p-3 rounded-full">
-                    <CheckCircle className="w-12 h-12 text-[#005f33]" />
+                <div className="flex justify-center mb-6">
+                  <div className="bg-green-100 p-4 rounded-full">
+                    <CheckCircle className="w-16 h-16 text-[#005f33]" />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Success!</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Success!</h3>
+                <p className="text-gray-600 mb-6 text-lg">
                   Your application for <strong>{job.title}</strong> has been successfully submitted.
                 </p>
-                <p className="text-sm text-gray-500">You will be redirected to your applications page shortly...</p>
+                
+                {/* Application Reference Number */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">Application Reference Number</h4>
+                  <div className="bg-white border border-gray-300 rounded-md p-3 mb-3">
+                    <code className="text-2xl font-mono font-bold text-[#005f33] tracking-wider">
+                      {applicationRef}
+                    </code>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Please save this reference number for your records. You can use it to track your application status.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-blue-800 mb-2">What happens next?</h4>
+                  <ul className="text-sm text-blue-700 text-left space-y-1">
+                    <li>• You will receive a confirmation email shortly</li>
+                    <li>• Your application will be reviewed by our HR team</li>
+                    <li>• We'll contact you if you're selected for an interview</li>
+                    <li>• You can track your application status in your dashboard</li>
+                  </ul>
+                </div>
               </div>
+
+              <DialogFooter className="justify-center">
+                <Button
+                  onClick={handleSuccessOK}
+                  className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-8 py-3 text-lg"
+                >
+                  OK - View My Applications
+                </Button>
+              </DialogFooter>
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Sticky Apply Button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <JobTypeIcon className="w-5 h-5 text-[#0086C9]" />
+                <span className="font-medium text-gray-900">{job.title}</span>
+                {job.postNumber && (
+                  <span className="text-sm text-gray-500">({job.postNumber})</span>
+                )}
+              </div>
+              <div className="text-sm text-gray-600">
+                Closing: {formatDate(job.closingDate)}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                className={`${job.isFavorite ? 'text-red-600 border-red-300' : 'text-gray-600 border-gray-300'}`}
+                onClick={handleToggleFavorite}
+                size="sm"
+              >
+                <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600' : ''}`} />
+                {job.isFavorite ? 'Saved' : 'Save'}
+              </Button>
+              
+              {!hasApplied ? (
+                <Button 
+                  className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={handleApply}
+                >
+                  Apply Now
+                </Button>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 cursor-default"
+                    disabled
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Applied
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white font-semibold px-6 py-2"
+                    onClick={handleViewApplication}
+                  >
+                    View Application
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Footer */}
       <Footer />
