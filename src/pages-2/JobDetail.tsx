@@ -84,7 +84,7 @@ const JobDetailPage: React.FC = () => {
   // Validation function
   const validateForm = () => {
     const errors: string[] = [];
-    
+
     if (!educationLevel) errors.push('education');
     if (!isEmployed) errors.push('isEmployed');
     if (!criminalOffence) errors.push('criminalOffence');
@@ -97,7 +97,7 @@ const JobDetailPage: React.FC = () => {
     if (businessWithState === 'yes' && !relinquishBusinessInterests) errors.push('relinquishBusinessInterests');
     if (!privateSectorExperience) errors.push('privateSectorExperience');
     if (!publicSectorExperience) errors.push('publicSectorExperience');
-    
+
     return errors;
   };
 
@@ -106,15 +106,15 @@ const JobDetailPage: React.FC = () => {
     if (errors.length > 0) {
       const firstError = errors[0];
       const element = document.getElementById(firstError);
-      
+
       if (element) {
         // Scroll the element into view within the modal
-        element.scrollIntoView({ 
-          behavior: 'smooth', 
+        element.scrollIntoView({
+          behavior: 'smooth',
           block: 'center',
-          inline: 'nearest'
+          inline: 'nearest',
         });
-        
+
         // Focus the first radio button or input in the field
         setTimeout(() => {
           const firstInput = element.querySelector('input[type="radio"], input[type="text"], input[type="number"], select');
@@ -134,10 +134,10 @@ const JobDetailPage: React.FC = () => {
   const handleSubmitApplication = async () => {
     // Clear previous validation errors
     setValidationErrors([]);
-    
+
     // Validate form
     const errors = validateForm();
-    
+
     if (errors.length > 0) {
       setValidationErrors(errors);
       scrollToFirstError(errors);
@@ -152,7 +152,7 @@ const JobDetailPage: React.FC = () => {
     // Generate application reference number
     const generatedApplicationRef = `APP-${Date.now().toString().slice(-8)}-${job.postNumber || job.id.slice(-4).toUpperCase()}`;
     setApplicationRef(generatedApplicationRef);
-    
+
     // Create application
     const newApplication = {
       id: `app_${Date.now()}`,
@@ -333,7 +333,7 @@ const JobDetailPage: React.FC = () => {
             <div className="flex items-center text-gray-700">
               <div className="bg-[#E0F2FE] text-[#0086C9]mr-2 p-2 rounded-full">R</div>
               <span className="text-lg font-semibold">
-                {job.stipend ? `${job.stipend} per annum` : job.salary ? `${job.salary} per annum` : 'Salary not specified'}
+                {job.stipend ? `${job.stipend}` : job.salary ? `${job.salary}` : 'Salary not specified'}
               </span>
             </div>
             <div className="flex items-center text-gray-700">
@@ -492,15 +492,18 @@ const JobDetailPage: React.FC = () => {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        Please complete all required fields
-                      </h3>
+                      <h3 className="text-sm font-medium text-red-800">Please complete all required fields</h3>
                       <p className="text-sm text-red-700 mt-1">
-                        {validationErrors.length} field{validationErrors.length !== 1 ? 's' : ''} still need{validationErrors.length === 1 ? 's' : ''} to be completed.
+                        {validationErrors.length} field{validationErrors.length !== 1 ? 's' : ''} still need
+                        {validationErrors.length === 1 ? 's' : ''} to be completed.
                       </p>
                     </div>
                   </div>
@@ -513,8 +516,8 @@ const JobDetailPage: React.FC = () => {
                     What is your Highest Education Level? {hasError('education') && <span className="text-red-500">*</span>}
                   </Label>
                   <Select value={educationLevel} onValueChange={setEducationLevel}>
-                    <SelectTrigger 
-                      id="education" 
+                    <SelectTrigger
+                      id="education"
                       className={`w-full ${hasError('education') ? 'border-red-500 focus:border-red-500' : ''}`}
                     >
                       <SelectValue placeholder="Select your education level" />
@@ -550,7 +553,8 @@ const JobDetailPage: React.FC = () => {
                 {/* Criminal Offence Questions */}
                 <div className="space-y-3" id="criminalOffence">
                   <Label className={hasError('criminalOffence') ? 'text-red-600' : ''}>
-                    Have you been convicted or found guilty of a criminal offence (including an admission of guilt)? {hasError('criminalOffence') && <span className="text-red-500">*</span>}
+                    Have you been convicted or found guilty of a criminal offence (including an admission of guilt)?{' '}
+                    {hasError('criminalOffence') && <span className="text-red-500">*</span>}
                   </Label>
                   <RadioGroup value={criminalOffence || ''} onValueChange={setCriminalOffence}>
                     <div className="flex items-center space-x-2">
@@ -578,7 +582,8 @@ const JobDetailPage: React.FC = () => {
 
                 <div className="space-y-3" id="pendingCriminalCase">
                   <Label className={hasError('pendingCriminalCase') ? 'text-red-600' : ''}>
-                    Do you have any pending criminal case against you? {hasError('pendingCriminalCase') && <span className="text-red-500">*</span>}
+                    Do you have any pending criminal case against you?{' '}
+                    {hasError('pendingCriminalCase') && <span className="text-red-500">*</span>}
                   </Label>
                   <RadioGroup value={pendingCriminalCase || ''} onValueChange={setPendingCriminalCase}>
                     <div className="flex items-center space-x-2">
@@ -607,7 +612,8 @@ const JobDetailPage: React.FC = () => {
                 {/* Dismissal and Disciplinary Questions */}
                 <div className="space-y-3" id="dismissedForMisconduct">
                   <Label className={hasError('dismissedForMisconduct') ? 'text-red-600' : ''}>
-                    Have you ever been dismissed for misconduct from the Public Service? {hasError('dismissedForMisconduct') && <span className="text-red-500">*</span>}
+                    Have you ever been dismissed for misconduct from the Public Service?{' '}
+                    {hasError('dismissedForMisconduct') && <span className="text-red-500">*</span>}
                   </Label>
                   <RadioGroup value={dismissedForMisconduct || ''} onValueChange={setDismissedForMisconduct}>
                     <div className="flex items-center space-x-2">
@@ -635,7 +641,8 @@ const JobDetailPage: React.FC = () => {
 
                 <div className="space-y-3" id="pendingDisciplinaryCase">
                   <Label className={hasError('pendingDisciplinaryCase') ? 'text-red-600' : ''}>
-                    Do you have any pending disciplinary case against you? {hasError('pendingDisciplinaryCase') && <span className="text-red-500">*</span>}
+                    Do you have any pending disciplinary case against you?{' '}
+                    {hasError('pendingDisciplinaryCase') && <span className="text-red-500">*</span>}
                   </Label>
                   <RadioGroup value={pendingDisciplinaryCase || ''} onValueChange={setPendingDisciplinaryCase}>
                     <div className="flex items-center space-x-2">
@@ -664,7 +671,8 @@ const JobDetailPage: React.FC = () => {
                 {/* Resignation Question */}
                 <div className="space-y-3" id="resignedPendingDisciplinary">
                   <Label className={hasError('resignedPendingDisciplinary') ? 'text-red-600' : ''}>
-                    Have you resigned from a recent job pending any disciplinary proceeding against you? {hasError('resignedPendingDisciplinary') && <span className="text-red-500">*</span>}
+                    Have you resigned from a recent job pending any disciplinary proceeding against you?{' '}
+                    {hasError('resignedPendingDisciplinary') && <span className="text-red-500">*</span>}
                   </Label>
                   <RadioGroup value={resignedPendingDisciplinary || ''} onValueChange={setResignedPendingDisciplinary}>
                     <div className="flex items-center space-x-2">
@@ -729,7 +737,8 @@ const JobDetailPage: React.FC = () => {
                 {businessWithState === 'yes' && (
                   <div className="space-y-3" id="relinquishBusinessInterests">
                     <Label className={hasError('relinquishBusinessInterests') ? 'text-red-600' : ''}>
-                      In the event that you are employed in the Public Service, will you immediately relinquish such business interests? {hasError('relinquishBusinessInterests') && <span className="text-red-500">*</span>}
+                      In the event that you are employed in the Public Service, will you immediately relinquish such business interests?{' '}
+                      {hasError('relinquishBusinessInterests') && <span className="text-red-500">*</span>}
                     </Label>
                     <RadioGroup value={relinquishBusinessInterests || ''} onValueChange={setRelinquishBusinessInterests}>
                       <div className="flex items-center space-x-2">
@@ -782,11 +791,7 @@ const JobDetailPage: React.FC = () => {
                 <Button variant="outline" onClick={handleCloseModal} className="bg-white border border-[#005f33] text-[#005f33]">
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleSubmitApplication}
-                  className="bg-[#005f33] border-none text-white"
-                  disabled={isSubmitting}
-                >
+                <Button onClick={handleSubmitApplication} className="bg-[#005f33] border-none text-white" disabled={isSubmitting}>
                   {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </Button>
               </DialogFooter>
@@ -807,14 +812,12 @@ const JobDetailPage: React.FC = () => {
                 <p className="text-gray-600 mb-6 text-lg">
                   Your application for <strong>{job.title}</strong> has been successfully submitted.
                 </p>
-                
+
                 {/* Application Reference Number */}
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
                   <h4 className="text-lg font-semibold text-gray-800 mb-2">Application Reference Number</h4>
                   <div className="bg-white border border-gray-300 rounded-md p-3 mb-3">
-                    <code className="text-2xl font-mono font-bold text-[#005f33] tracking-wider">
-                      {applicationRef}
-                    </code>
+                    <code className="text-2xl font-mono font-bold text-[#005f33] tracking-wider">{applicationRef}</code>
                   </div>
                   <p className="text-sm text-gray-600">
                     Please save this reference number for your records. You can use it to track your application status.
@@ -833,10 +836,7 @@ const JobDetailPage: React.FC = () => {
               </div>
 
               <DialogFooter className="justify-center">
-                <Button
-                  onClick={handleSuccessOK}
-                  className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-8 py-3 text-lg"
-                >
+                <Button onClick={handleSuccessOK} className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-8 py-3 text-lg">
                   OK - View My Applications
                 </Button>
               </DialogFooter>
@@ -853,15 +853,11 @@ const JobDetailPage: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <JobTypeIcon className="w-5 h-5 text-[#0086C9]" />
                 <span className="font-medium text-gray-900">{job.title}</span>
-                {job.postNumber && (
-                  <span className="text-sm text-gray-500">({job.postNumber})</span>
-                )}
+                {job.postNumber && <span className="text-sm text-gray-500">({job.postNumber})</span>}
               </div>
-              <div className="text-sm text-gray-600">
-                Closing: {formatDate(job.closingDate)}
-              </div>
+              <div className="text-sm text-gray-600">Closing: {formatDate(job.closingDate)}</div>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
@@ -872,9 +868,9 @@ const JobDetailPage: React.FC = () => {
                 <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600' : ''}`} />
                 {job.isFavorite ? 'Saved' : 'Save'}
               </Button>
-              
+
               {!hasApplied ? (
-                <Button 
+                <Button
                   className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
                   onClick={handleApply}
                 >
@@ -882,14 +878,11 @@ const JobDetailPage: React.FC = () => {
                 </Button>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Button 
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 cursor-default"
-                    disabled
-                  >
+                  <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 cursor-default" disabled>
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Applied
                   </Button>
-                  <Button 
+                  <Button
                     variant="outline"
                     className="border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white font-semibold px-6 py-2"
                     onClick={handleViewApplication}
