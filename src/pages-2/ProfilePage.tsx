@@ -128,18 +128,18 @@ interface ContactFormData {
 
 // Dummy data
 const dummyPersonalInfo: ProfileFormData = {
-  firstName: 'Zizipho',
-  initial: 'ZN',
-  title: 'Mrs',
-  lastName: 'Nceku',
-  idNumber: '9001016281082',
-  age: '33',
-  race: 'Black African',
-  dateOfBirth: '1990-01-01',
-  gender: 'Female',
-  passportNumber: 'AB123456',
-  rightToWork: 'South African Citizen',
-  disabilityStatus: 'No',
+  firstName: '',
+  initial: '',
+  title: '',
+  lastName: '',
+  idNumber: '',
+  age: '',
+  race: '',
+  dateOfBirth: '',
+  gender: '',
+  passportNumber: '',
+  rightToWork: '',
+  disabilityStatus: '',
   disabilityNature: '',
   languages: [
     { id: '1', language: 'English', proficiency: 'Fluent' },
@@ -158,26 +158,18 @@ const dummyPersonalInfo: ProfileFormData = {
       toDate: '2023-12-31',
       reasonForLeaving: 'Career advancement opportunity',
     },
-    {
-      id: '2',
-      companyName: 'XYZ Tech',
-      position: 'Junior Developer',
-      fromDate: '2018-06-01',
-      toDate: '2019-12-31',
-      reasonForLeaving: 'Better growth prospects',
-    },
   ],
 };
 
 const dummyContactInfo: ContactFormData = {
-  email: 'zizipho.nceku@example.com',
-  mobileNumber: '082 123 4567',
-  alternativeNumber: '011 555 1234',
-  streetAddress: '123 Main Street, Rosebank',
-  city: 'Johannesburg',
-  province: 'Gauteng',
-  postalCode: '2196',
-  country: 'South Africa',
+  email: '',
+  mobileNumber: '',
+  alternativeNumber: '',
+  streetAddress: '',
+  city: '',
+  province: '',
+  postalCode: '',
+  country: '',
 };
 
 const ProfilePage: React.FC = () => {

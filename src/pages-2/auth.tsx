@@ -370,6 +370,16 @@ const AuthPageV2 = () => {
               <p className="mt-1 text-xs text-gray-500">Try test@example.com / Password123!</p>
             </div>
 
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-sm text-[#005f33] hover:text-[#004d2a] font-medium"
+              >
+                Forgot password?
+              </button>
+            </div>
+
             <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Log in'}
             </Button>
@@ -388,6 +398,22 @@ const AuthPageV2 = () => {
               {activeTab === 'signup' ? 'Log in' : 'Sign up'}
             </button>
           </p>
+        </div>
+
+        {/* Log a Case Section */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-3">
+              Need help or have a query?
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/cases')}
+              className="inline-flex items-center px-4 py-2 border border-[#005f33] text-sm font-medium rounded-md text-[#005f33] bg-white hover:bg-[#005f33] hover:text-white transition-colors duration-200"
+            >
+              Log a Case
+            </button>
+          </div>
         </div>
       </div>
     </div>

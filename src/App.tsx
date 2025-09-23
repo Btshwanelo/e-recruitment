@@ -18,7 +18,7 @@ import StatementsPage from './pages/Statements';
 import LogCasePage from './pages/Case/LogCasePage';
 import NotFound from './pages/NotFound';
 import LandingPage from './pages/LandingPage';
-import ProtectedRoute, { PublicOnlyRoute } from './HOC/ProtectedRoute';
+import ProtectedRoute from './HOC/ProtectedRoute';
 import EmailVerificationPage from './pages/EmailVerifcation';
 import CasePage from './pages/Case';
 import AccountPage from './pages/Accounts';
@@ -36,6 +36,7 @@ import JobDetailPage from './pages-2/JobDetail';
 import JobListingsPage from './pages-2/JobListingsPage';
 import ApplicationsListing from './pages-2/ApplicationsListing';
 import AuthPageV2 from './pages-2/auth';
+import ForgotPasswordPage from './pages-2/ForgotPasswordPage';
 import OTPVerificationRoutes from './pages-2/Verification';
 import AppliedJob from './pages-2/AppliedJob';
 
@@ -45,6 +46,8 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<AuthPageV2 />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/cases" element={<LogCasePage />} />
         <Route path="/verification" element={<OTPNotification />} />
         <Route path="/verification/enter-otp" element={<OTPInput />} />
         <Route path="/verification/success" element={<VerificationSuccess />} />
