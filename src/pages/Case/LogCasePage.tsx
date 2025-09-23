@@ -9,7 +9,6 @@ import { ChevronDown, User, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-r
 const LogCasePage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    accountNumber: '',
     queryType: '',
     description: '',
     priority: 'medium',
@@ -17,7 +16,6 @@ const LogCasePage = () => {
     contactPhone: ''
   });
   const [errors, setErrors] = useState<{
-    accountNumber?: string;
     queryType?: string;
     description?: string;
     contactEmail?: string;
@@ -37,12 +35,6 @@ const LogCasePage = () => {
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
-
-    if (!formData.accountNumber.trim()) {
-      newErrors.accountNumber = 'Account number is required';
-    } else if (formData.accountNumber.length < 8) {
-      newErrors.accountNumber = 'Account number must be at least 8 characters';
-    }
 
     if (!formData.queryType) {
       newErrors.queryType = 'Please select a query type';
@@ -140,7 +132,7 @@ const LogCasePage = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Log a Case</h1>
           <p className="text-gray-600 max-w-md mx-auto">
-            Your input is greatly valued and will be directed to the relevant municipal department for resolution.
+            Need help with your job application? Our support team is here to assist you with any questions or issues.
           </p>
         </div>
 
@@ -153,22 +145,6 @@ const LogCasePage = () => {
 
         {/* Form */}
         <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* Account Number */}
-          <div className="space-y-2">
-            <label htmlFor="accountNumber" className="block text-sm font-medium text-gray-700">
-              Account Number *
-            </label>
-            <Input 
-              id="accountNumber" 
-              type="text" 
-              placeholder="Enter your account number" 
-              value={formData.accountNumber}
-              onChange={(e) => handleInputChange('accountNumber', e.target.value)}
-              className={`w-full border-gray-300 rounded ${errors.accountNumber ? 'border-red-500' : ''}`}
-            />
-            {errors.accountNumber && <p className="text-sm text-red-600">{errors.accountNumber}</p>}
-          </div>
-
           {/* Query Type */}
           <div className="space-y-2">
             <label htmlFor="queryType" className="block text-sm font-medium text-gray-700">
@@ -179,11 +155,13 @@ const LogCasePage = () => {
                 <SelectValue placeholder="Select a query type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="billing">Billing Inquiry</SelectItem>
-                <SelectItem value="technical">Technical Support</SelectItem>
-                <SelectItem value="feedback">Feedback</SelectItem>
-                <SelectItem value="complaint">Complaint</SelectItem>
-                <SelectItem value="service-request">Service Request</SelectItem>
+                <SelectItem value="application-status">Application Status Inquiry</SelectItem>
+                <SelectItem value="application-technical">Technical Support</SelectItem>
+                <SelectItem value="application-feedback">Application Feedback</SelectItem>
+                <SelectItem value="application-complaint">Application Complaint</SelectItem>
+                <SelectItem value="document-upload">Document Upload Issue</SelectItem>
+                <SelectItem value="interview-scheduling">Interview Scheduling</SelectItem>
+                <SelectItem value="profile-update">Profile Update Request</SelectItem>
                 <SelectItem value="general">General Inquiry</SelectItem>
               </SelectContent>
             </Select>
