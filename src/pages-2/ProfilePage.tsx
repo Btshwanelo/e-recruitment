@@ -782,7 +782,7 @@ const ProfilePage: React.FC = () => {
                         {personalFormData.languages.map((language) => (
                           <div
                             key={language.id}
-                            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 border border-gray-200 rounded-lg"
+                            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 border border-gray-200 rounded-lg"
                           >
                             <div className="space-y-2">
                               <Label htmlFor={`language-${language.id}`}>Language</Label>
@@ -795,7 +795,25 @@ const ProfilePage: React.FC = () => {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`proficiency-${language.id}`}>Proficiency Level</Label>
+                              <Label htmlFor={`proficiency-${language.id}`}>Speak - Proficiency Level</Label>
+                              <Select
+                                value={language.proficiency}
+                                onValueChange={(value) => handleLanguageChange(language.id, 'proficiency', value)}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select proficiency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Native">Native</SelectItem>
+                                  <SelectItem value="Fluent">Fluent</SelectItem>
+                                  <SelectItem value="Advanced">Advanced</SelectItem>
+                                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                  <SelectItem value="Basic">Basic</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`proficiency-${language.id}`}>Read/Write - Proficiency Level</Label>
                               <Select
                                 value={language.proficiency}
                                 onValueChange={(value) => handleLanguageChange(language.id, 'proficiency', value)}

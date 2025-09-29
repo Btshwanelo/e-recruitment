@@ -39,13 +39,15 @@ import AuthPageV2 from './pages-2/auth';
 import ForgotPasswordPage from './pages-2/ForgotPasswordPage';
 import OTPVerificationRoutes from './pages-2/Verification';
 import AppliedJob from './pages-2/AppliedJob';
+import JobOpeningsPage from './pages-2/Landing';
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<AuthPageV2 />} />
+        <Route path="/" element={<JobOpeningsPage />} />
+        <Route path="/auth" element={<AuthPageV2 />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/cases" element={<LogCasePage />} />
         <Route path="/verification" element={<OTPNotification />} />

@@ -37,6 +37,6 @@ export const baseQueryWithTransform = async (args, api, extraOptions) => {
 
 export const apiSlice = createApi({
   baseQuery: baseQueryWithTransform,
-  tagTypes: ['facility-data', 'accommodation-applications'],
+  tagTypes: [],
   endpoints: (builder) => ({}),
 });

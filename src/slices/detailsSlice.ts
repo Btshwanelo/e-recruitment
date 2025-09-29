@@ -3,11 +3,16 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 // Define initial state structure based on the given details data
 const initialState = {
   profileDetails: {
-    UserType: null,
-    Name: null,
-    Surname: null,
-    Email: null,
-    IdNumber: null,
+    UserType: null as string | null,
+    Name: null as string | null,
+    Surname: null as string | null,
+    Email: null as string | null,
+    IdNumber: null as string | null,
+    Mobile: null as string | null,
+    ProfileSteps: null as string | null,
+    isProfileComplete: false as boolean,
+    currentProfileStep: null as number | null,
+    currentStepDescription: null as string | null,
   },
 };
 
