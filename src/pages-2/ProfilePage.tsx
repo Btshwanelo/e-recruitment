@@ -8,7 +8,9 @@ import { Upload, FileText, X, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HeaderV2 from './Header';
 import { useNavigate } from 'react-router-dom';
-import { useExecuteRequest1Mutation } from '@/slices/services';
+import { useExecuteRequest1Mutation, useExecuteRequest2Mutation } from '@/slices/services';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 // Master data types
 interface MasterDataOption {
@@ -213,8 +215,8 @@ interface ContactFormData {
   country: string;
 }
 
-// Dummy data
-const dummyPersonalInfo: ProfileFormData = {
+// Default empty form data
+const defaultPersonalInfo: ProfileFormData = {
   firstName: '',
   initial: '',
   title: '',
@@ -228,27 +230,12 @@ const dummyPersonalInfo: ProfileFormData = {
   rightToWork: '',
   disabilityStatus: '',
   disabilityNature: '',
-  languages: [
-    { id: '1', language: 'English', proficiency: 'Fluent' },
-    { id: '2', language: 'Zulu', proficiency: 'Native' },
-  ],
-  qualifications: [
-    { id: '1', qualification: "Bachelor's Degree", institution: 'University of Cape Town', yearObtained: '2015' },
-    { id: '2', qualification: 'National Senior Certificate (NSC)', institution: 'Rondebosch Boys High School', yearObtained: '2011' },
-  ],
-  workExperience: [
-    {
-      id: '1',
-      companyName: 'ABC Corporation',
-      position: 'Software Developer',
-      fromDate: '2020-01-01',
-      toDate: '2023-12-31',
-      reasonForLeaving: 'Career advancement opportunity',
-    },
-  ],
+  languages: [],
+  qualifications: [],
+  workExperience: [],
 };
 
-const dummyContactInfo: ContactFormData = {
+const defaultContactInfo: ContactFormData = {
   email: '',
   mobileNumber: '',
   alternativeNumber: '',
@@ -260,15 +247,275 @@ const dummyContactInfo: ContactFormData = {
 };
 
 const ProfilePage: React.FC = () => {
-  // Active tab state
-  const [activeTab, setActiveTab] = useState<string>('personal');
+  // Get profile data from Redux store
+  const profileData = useSelector((state: RootState) => state.profile.profileDetails);
+
+  // Active tab state - initialize with current profile step
+  const getInitialTab = () => {
+    if (profileData.currentProfileStep) {
+      const stepMap: { [key: number]: string } = {
+        1070: 'personal',
+        1071: 'contact',
+        1072: 'qualifications',
+        1073: 'work-experience',
+        1074: 'cv',
+      };
+      return stepMap[profileData.currentProfileStep] || 'personal';
+    }
+    return 'personal';
+  };
+
+  const [activeTab, setActiveTab] = useState<string>(getInitialTab());
 
   // Use the custom master data hook
   const { getOptionsForSchema } = useMasterData(activeTab);
 
-  // Form data states
-  const [personalFormData, setPersonalFormData] = useState<ProfileFormData>(dummyPersonalInfo);
-  const [contactFormData, setContactFormData] = useState<ContactFormData>(dummyContactInfo);
+  // API mutations
+  const [updateProfile, updateProps] = useExecuteRequest2Mutation();
+
+  // Helper function to map profile slice data to form data
+  const mapProfileDataToForm = () => {
+    const personalData: ProfileFormData = {
+      firstName: profileData.applicantDetails?.personalInfo?.firstName || profileData.Name || defaultPersonalInfo.firstName,
+      initial: profileData.applicantDetails?.personalInfo?.initial || defaultPersonalInfo.initial,
+      title: profileData.applicantDetails?.personalInfo?.titleId?.toString() || defaultPersonalInfo.title,
+      lastName: profileData.applicantDetails?.personalInfo?.lastName || profileData.Surname || defaultPersonalInfo.lastName,
+      idNumber: profileData.applicantDetails?.personalInfo?.idNumber || profileData.IdNumber || defaultPersonalInfo.idNumber,
+      age: profileData.applicantDetails?.personalInfo?.age?.toString() || defaultPersonalInfo.age,
+      race: profileData.applicantDetails?.personalInfo?.raceId?.toString() || defaultPersonalInfo.race,
+      dateOfBirth: profileData.applicantDetails?.personalInfo?.dateOfBirth || defaultPersonalInfo.dateOfBirth,
+      gender: profileData.applicantDetails?.personalInfo?.genderId?.toString() || defaultPersonalInfo.gender,
+      passportNumber: profileData.applicantDetails?.personalInfo?.passportNumber || defaultPersonalInfo.passportNumber,
+      rightToWork: profileData.applicantDetails?.personalInfo?.rightToWorkStatusId?.toString() || defaultPersonalInfo.rightToWork,
+      disabilityStatus: profileData.applicantDetails?.personalInfo?.disabilityStatusId?.toString() || defaultPersonalInfo.disabilityStatus,
+      disabilityNature: defaultPersonalInfo.disabilityNature, // Not available in profile data
+      languages: profileData.applicantDetails?.languages?.language
+        ? [
+            {
+              id: '1',
+              language: profileData.applicantDetails.languages.language,
+              proficiency: profileData.applicantDetails.languages.proficiencyLevel || '',
+            },
+          ]
+        : defaultPersonalInfo.languages,
+      qualifications: profileData.applicantDetails?.qualifications?.qualificationName
+        ? [
+            {
+              id: '1',
+              qualification: profileData.applicantDetails.qualifications.qualificationName,
+              institution: profileData.applicantDetails.qualifications.institution || '',
+              yearObtained: profileData.applicantDetails.qualifications.yearObtained?.toString() || '',
+            },
+          ]
+        : defaultPersonalInfo.qualifications,
+      workExperience: profileData.applicantDetails?.workExperience?.companyName
+        ? [
+            {
+              id: '1',
+              companyName: profileData.applicantDetails.workExperience.companyName,
+              position: profileData.applicantDetails.workExperience.position || '',
+              fromDate: profileData.applicantDetails.workExperience.fromDate || '',
+              toDate: profileData.applicantDetails.workExperience.toDate || '',
+              reasonForLeaving: profileData.applicantDetails.workExperience.reasonForLeaving || '',
+            },
+          ]
+        : defaultPersonalInfo.workExperience,
+    };
+
+    const contactData: ContactFormData = {
+      email: profileData.applicantDetails?.contactInfo?.email || profileData.Email || defaultContactInfo.email,
+      mobileNumber: profileData.applicantDetails?.contactInfo?.mobile || profileData.Mobile || defaultContactInfo.mobileNumber,
+      alternativeNumber: profileData.applicantDetails?.contactInfo?.alternativeNumber || defaultContactInfo.alternativeNumber,
+      streetAddress: profileData.applicantDetails?.contactInfo?.streetAddress || defaultContactInfo.streetAddress,
+      city: profileData.applicantDetails?.contactInfo?.city || defaultContactInfo.city,
+      province: profileData.applicantDetails?.contactInfo?.provinceId?.toString() || defaultContactInfo.province,
+      postalCode: profileData.applicantDetails?.contactInfo?.postalCode || defaultContactInfo.postalCode,
+      country: profileData.applicantDetails?.contactInfo?.country || defaultContactInfo.country,
+    };
+
+    return { personalData, contactData };
+  };
+
+  // Initialize form data with profile slice data
+  const { personalData, contactData } = mapProfileDataToForm();
+
+  // Form data states - initialize with profile data
+  const [personalFormData, setPersonalFormData] = useState<ProfileFormData>(personalData);
+  const [contactFormData, setContactFormData] = useState<ContactFormData>(contactData);
+
+  // Update form data when profile data changes
+  useEffect(() => {
+    const { personalData: newPersonalData, contactData: newContactData } = mapProfileDataToForm();
+    setPersonalFormData(newPersonalData);
+    setContactFormData(newContactData);
+  }, [profileData]);
+
+  // Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        // Remove the data URL prefix to get just the base64 string
+        const base64Data = base64.split(',')[1];
+        resolve(base64Data);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Helper function to get current step data only
+  const getCurrentStepData = () => {
+    const baseEntity = {
+      // ProfileSteps: activeTab, // Current step
+    };
+
+    switch (activeTab) {
+      case 'personal':
+        return {
+          ...baseEntity,
+          // Personal Information fields only
+          FirstName: personalFormData.firstName,
+          LastName: personalFormData.lastName,
+          IdNumber: personalFormData.idNumber,
+          Email: contactFormData.email || profileData.Email || '',
+          GenderId: personalFormData.gender,
+          TitleId: personalFormData.title,
+          RaceId: personalFormData.race,
+          Age: personalFormData.age,
+          DateOfBirth: personalFormData.dateOfBirth,
+          Initial: personalFormData.initial,
+          PassportNumber: personalFormData.passportNumber,
+          RightToWorkStatusId: personalFormData.rightToWork,
+          DisabilityStatusId: personalFormData.disabilityStatus,
+        };
+
+      case 'contact':
+        return {
+          ...baseEntity,
+          // Contact Information fields only
+          Mobile: contactFormData.mobileNumber,
+          AlternativeNumber: contactFormData.alternativeNumber,
+          StreetAddress: contactFormData.streetAddress,
+          City: contactFormData.city,
+          ProvinceId: contactFormData.province,
+          PostalCode: contactFormData.postalCode,
+          Country: contactFormData.country,
+        };
+
+      case 'qualifications':
+        // Get the first qualification for now (you can modify this logic)
+        const primaryQualification = personalFormData.qualifications[0];
+        return {
+          ...baseEntity,
+          // Qualifications fields only
+          QualificationName: primaryQualification?.qualification || '',
+          Institution: primaryQualification?.institution || '',
+          YearObtained: primaryQualification?.yearObtained || '',
+        };
+
+      case 'work-experience':
+        // Get the first work experience for now (you can modify this logic)
+        const primaryWorkExperience = personalFormData.workExperience[0];
+        return {
+          ...baseEntity,
+          // Work Experience fields only
+          CompanyName: primaryWorkExperience?.companyName || '',
+          Position: primaryWorkExperience?.position || '',
+          FromDate: primaryWorkExperience?.fromDate || '',
+          ToDate: primaryWorkExperience?.toDate || '',
+          ReasonForLeaving: primaryWorkExperience?.reasonForLeaving || '',
+        };
+
+      case 'cv':
+        // Get the first language for now (you can modify this logic)
+        const primaryLanguage = personalFormData.languages[0];
+        return {
+          ...baseEntity,
+          // Languages fields only
+          Language: primaryLanguage?.language || '',
+          ProficiencyLevel: primaryLanguage?.proficiency || '',
+        };
+
+      default:
+        return baseEntity;
+    }
+  };
+
+  // Validation function for current step
+  const validateCurrentStep = () => {
+    switch (activeTab) {
+      case 'personal':
+        return personalFormData.firstName && personalFormData.lastName && personalFormData.idNumber;
+      case 'contact':
+        return contactFormData.mobileNumber && contactFormData.email;
+      case 'qualifications':
+        return personalFormData.qualifications.length > 0 && personalFormData.qualifications[0].qualification;
+      case 'work-experience':
+        return personalFormData.workExperience.length > 0 && personalFormData.workExperience[0].companyName;
+      case 'cv':
+        return personalFormData.languages.length > 0 && personalFormData.languages[0].language;
+      default:
+        return true;
+    }
+  };
+
+  // Update profile function - only saves current step data
+  const handleUpdateProfile = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Validate current step before saving
+      if (!validateCurrentStep()) {
+        setError(`Please fill in all required fields for the ${activeTab} step`);
+        alert(`Please fill in all required fields for the ${activeTab} step`);
+        return;
+      }
+
+      // Get current step data only
+      let currentStepData = getCurrentStepData();
+
+      // Add CV file data if we're on the CV step and file is available
+      if (activeTab === 'cv' && cvFile) {
+        const cvFileContent = await fileToBase64(cvFile.file);
+        // For CV step, we need to include CV fields
+        currentStepData = {
+          ...currentStepData,
+          CVFileName: cvFile.name,
+          CVFileContent: cvFileContent,
+          CVFileType: cvFile.type,
+        } as any; // Type assertion to handle dynamic CV fields
+      }
+
+      const updatePayload = {
+        body: {
+          entityName: 'Applicant',
+          requestName: 'UpsertRegEricruit',
+          inputParamters: {
+            Entity: currentStepData,
+          },
+          Documents: {},
+          recordId: 'C8AE2889-2D17-4D21-A206-5D4917F4E0BC', // This should come from user context
+        },
+      };
+
+      console.log(`Update Profile Payload for ${activeTab} step:`, updatePayload);
+
+      const response = await updateProfile(updatePayload).unwrap();
+      console.log(`Profile updated successfully for ${activeTab} step:`, response);
+
+      // Show success message or handle success
+      alert(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} step updated successfully!`);
+    } catch (err) {
+      setError(`Failed to update ${activeTab} step`);
+      console.error(`Error updating ${activeTab} step:`, err);
+      alert(`Failed to update ${activeTab} step. Please try again.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // File upload states
   const [cvFile, setCvFile] = useState<UploadedFile | null>(null);
@@ -276,6 +523,10 @@ const ProfilePage: React.FC = () => {
   const [uploadErrors, setUploadErrors] = useState<FileUploadError[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [activeDocTab, setActiveDocTab] = useState<string>('cv');
+
+  // Profile update states
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // File input refs
   const cvFileInputRef = useRef<HTMLInputElement>(null);
@@ -291,16 +542,31 @@ const ProfilePage: React.FC = () => {
     return currentIndex < stepOrder.length - 1 ? stepOrder[currentIndex + 1] : 'cv';
   };
 
-  const handleStepSave = (e: React.FormEvent) => {
+  const handleStepSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const nextStep = getNextStep(activeTab);
 
-    if (nextStep === 'cv') {
-      // After CV step, navigate to jobs
-      navigate('/jobs');
-    } else {
-      // Move to next step
-      setActiveTab(nextStep);
+    try {
+      // Update profile with current form data
+      await handleUpdateProfile();
+
+      const nextStep = getNextStep(activeTab);
+
+      if (nextStep === 'cv') {
+        // After CV step, navigate to jobs
+        navigate('/jobs');
+      } else {
+        // Move to next step
+        setActiveTab(nextStep);
+      }
+    } catch (error) {
+      console.error('Error saving step:', error);
+      // Still allow navigation even if update fails
+      const nextStep = getNextStep(activeTab);
+      if (nextStep === 'cv') {
+        navigate('/jobs');
+      } else {
+        setActiveTab(nextStep);
+      }
     }
   };
 
@@ -633,6 +899,19 @@ const ProfilePage: React.FC = () => {
           </div>
         )}
 
+        {/* Profile Update Error Display */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-2" />
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800">Profile Update Error</h3>
+                <p className="mt-1 text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Content Area */}
         <div className="flex bg-white rounded-xl flex-col md:flex-row gap-8">
           {/* Sidebar */}
@@ -898,7 +1177,7 @@ const ProfilePage: React.FC = () => {
                               </Select>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`proficiency-${language.id}`}>Speak - Proficiency Level</Label>
+                              <Label htmlFor={`proficiency-${language.id}`}>Proficiency Level</Label>
                               <Select
                                 value={language.proficiency}
                                 onValueChange={(value) => handleLanguageChange(language.id, 'proficiency', value)}
@@ -908,24 +1187,6 @@ const ProfilePage: React.FC = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {getOptionsForSchema('SpeakingProficiencyId').map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      {option.lable}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`proficiency-${language.id}`}>Read/Write - Proficiency Level</Label>
-                              <Select
-                                value={language.proficiency}
-                                onValueChange={(value) => handleLanguageChange(language.id, 'proficiency', value)}
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select proficiency" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {getOptionsForSchema('ReadOrWriteProficiencyId').map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
                                       {option.lable}
                                     </SelectItem>
@@ -957,8 +1218,14 @@ const ProfilePage: React.FC = () => {
                         <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                           Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                          Next Step
+                        <Button
+                          type="submit"
+                          disabled={isLoading || updateProps.isLoading}
+                          className="bg-[#005f33] w-[180px] hover:bg-[#005f33] disabled:opacity-50"
+                        >
+                          {isLoading || updateProps.isLoading
+                            ? 'Saving...'
+                            : `Save ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`}
                         </Button>
                       </div>
                     </form>
@@ -1038,23 +1305,16 @@ const ProfilePage: React.FC = () => {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="province">Province</Label>
-                            <Select
-                              value={contactFormData.province}
-                              onValueChange={(value) => setContactFormData((prev) => ({ ...prev, province: value }))}
-                            >
+                            <Select value={personalFormData.title} onValueChange={handleTitleChange}>
                               <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select province" />
+                                <SelectValue placeholder="Select a title" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Eastern Cape">Eastern Cape</SelectItem>
-                                <SelectItem value="Free State">Free State</SelectItem>
-                                <SelectItem value="Gauteng">Gauteng</SelectItem>
-                                <SelectItem value="KwaZulu-Natal">KwaZulu-Natal</SelectItem>
-                                <SelectItem value="Limpopo">Limpopo</SelectItem>
-                                <SelectItem value="Mpumalanga">Mpumalanga</SelectItem>
-                                <SelectItem value="Northern Cape">Northern Cape</SelectItem>
-                                <SelectItem value="North West">North West</SelectItem>
-                                <SelectItem value="Western Cape">Western Cape</SelectItem>
+                                {getOptionsForSchema('ProvinceId').map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.lable}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>
@@ -1087,8 +1347,14 @@ const ProfilePage: React.FC = () => {
                         <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                           Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                          Next Step
+                        <Button
+                          type="submit"
+                          disabled={isLoading || updateProps.isLoading}
+                          className="bg-[#005f33] w-[180px] hover:bg-[#005f33] disabled:opacity-50"
+                        >
+                          {isLoading || updateProps.isLoading
+                            ? 'Saving...'
+                            : `Save ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`}
                         </Button>
                       </div>
                     </form>
@@ -1177,8 +1443,14 @@ const ProfilePage: React.FC = () => {
                         <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                           Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                          Next Step
+                        <Button
+                          type="submit"
+                          disabled={isLoading || updateProps.isLoading}
+                          className="bg-[#005f33] w-[180px] hover:bg-[#005f33] disabled:opacity-50"
+                        >
+                          {isLoading || updateProps.isLoading
+                            ? 'Saving...'
+                            : `Save ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`}
                         </Button>
                       </div>
                     </form>
@@ -1276,8 +1548,14 @@ const ProfilePage: React.FC = () => {
                         <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                           Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                          Next Step
+                        <Button
+                          type="submit"
+                          disabled={isLoading || updateProps.isLoading}
+                          className="bg-[#005f33] w-[180px] hover:bg-[#005f33] disabled:opacity-50"
+                        >
+                          {isLoading || updateProps.isLoading
+                            ? 'Saving...'
+                            : `Save ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`}
                         </Button>
                       </div>
                     </form>
@@ -1421,8 +1699,14 @@ const ProfilePage: React.FC = () => {
                       <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
                         Cancel
                       </Button>
-                      <Button onClick={handleStepSave} className="bg-[#005f33] w-[180px] hover:bg-[#005f33]">
-                        Complete Profile
+                      <Button
+                        onClick={handleStepSave}
+                        disabled={isLoading || updateProps.isLoading}
+                        className="bg-[#005f33] w-[180px] hover:bg-[#005f33] disabled:opacity-50"
+                      >
+                        {isLoading || updateProps.isLoading
+                          ? 'Saving...'
+                          : `Save ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} & Complete`}
                       </Button>
                     </div>
                   </>
