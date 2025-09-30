@@ -5,23 +5,23 @@ import { Calendar, Briefcase, Building, MapPin, CheckCircle, GraduationCap, Hear
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { selectHasApplied, selectApplicationByJobId, addApplication, toggleFavorite } from '@/slices/jobsSlice';
 import HeaderV2 from './Header';
 import Footer from '@/components/Footer';
-import { useExecuteRequest1Mutation } from '@/slices/services';
+import { useExecuteRequest1Mutation, useExecuteRequest2Mutation, useExecuteRequest3Mutation } from '@/slices/services';
 
 const JobDetailPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [educationLevel, setEducationLevel] = useState('');
-  const [isEmployed, setIsEmployed] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [applicationRef, setApplicationRef] = useState<string>('');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { id: jobId } = useParams<{ id: string }>();
 
   // Job data state
   const [jobData, setJobData] = useState<any>(null);
@@ -29,9 +29,34 @@ const JobDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [getJob] = useExecuteRequest1Mutation();
-  
+  const [getMasterData, getMasterDataProps] = useExecuteRequest2Mutation();
+  const [jobApply] = useExecuteRequest3Mutation();
+
+  // Helper function to get options from master data
+  const getMasterOptions = (schemaName: string) => {
+    const masterData = getMasterDataProps?.data?.staticData;
+    if (!masterData) return [];
+
+    const schema = masterData.find((item: any) => item.schemaName === schemaName);
+    return schema?.options || [];
+  };
   useEffect(() => {
+    getMasterData({
+      body: {
+        entityName: 'Applicant',
+        requestName: 'RetrieveMasterValues',
+        inputParamters: {
+          Page: 'z83',
+        },
+      },
+    });
     const fetchJobDetails = async () => {
+      if (!jobId) {
+        setError('Job ID not found');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -39,10 +64,10 @@ const JobDetailPage: React.FC = () => {
           body: {
             entityName: 'JobVacancy',
             requestName: 'JobDetails',
-            recordId: 'c2a165e8-f48c-416f-8949-4851385954e2',
+            recordId: jobId, // Use the job ID from URL parameters
           },
         }).unwrap();
-        
+
         console.log('jobsProps', response);
         setJobData(response);
       } catch (err) {
@@ -54,7 +79,7 @@ const JobDetailPage: React.FC = () => {
     };
 
     fetchJobDetails();
-  }, []);
+  }, [jobId, getJob]); // Add jobId as dependency
 
   // Criminal offence questions
   const [criminalOffence, setCriminalOffence] = useState<string | null>(null);
@@ -83,9 +108,20 @@ const JobDetailPage: React.FC = () => {
   const [privateSectorExperience, setPrivateSectorExperience] = useState('');
   const [publicSectorExperience, setPublicSectorExperience] = useState('');
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { id: jobId } = useParams<{ id: string }>();
+  // Registration details
+  const [registrationDate, setRegistrationDate] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
+
+  // Correspondence method
+  const [correspondenceMethod, setCorrespondenceMethod] = useState<string | null>(null);
+
+  // Previous employment conditions
+  const [prevEmploymentCondition, setPrevEmploymentCondition] = useState<string | null>(null);
+  const [prevEmploymentDetails, setPrevEmploymentDetails] = useState('');
+
+  // Additional fields for API payload
+  const [publicServiceBackground, setPublicServiceBackground] = useState<string | null>(null);
+  const [lastPublicServicePosition, setLastPublicServicePosition] = useState('');
 
   // For now, we'll use a mock job ID since we're getting data from API
   const mockJobId = jobId || 'c2a165e8-f48c-416f-8949-4851385954e2';
@@ -93,31 +129,33 @@ const JobDetailPage: React.FC = () => {
   const application = useSelector((state: any) => selectApplicationByJobId(state, mockJobId));
 
   // Create a job object from API data for compatibility
-  const job = jobData ? {
-    id: mockJobId,
-    title: jobData['Job Vacancy']?.name || '',
-    postNumber: jobData['Job Vacancy']?.postNumber || '',
-    type: jobData['Job Vacancy']?.employmentType || '',
-    category: jobData['Job Vacancy']?.departmentIdName || '',
-    closingDate: jobData['Job Vacancy']?.closesOn || '',
-    salary: jobData['Job Vacancy']?.salary || '',
-    location: jobData['Job Vacancy']?.location || '',
-    description: jobData['Job Vacancy']?.jobDescription || '',
-    requirements: jobData['Job Vacancy']?.requirements || '',
-    status: jobData['Job Vacancy']?.status || '',
-    isFavorite: false, // This would need to be managed separately
-    // Additional properties for compatibility
-    company: jobData['Job Vacancy']?.departmentIdName || '',
-    stipend: jobData['Job Vacancy']?.salary || '',
-    grade: '', // Not provided in API response
-    postedDate: jobData['Job Vacancy']?.postedOn || '',
-    reference: jobData['Job Vacancy']?.postNumber || '',
-    responsibilities: jobData['Job Vacancy']?.jobDescription || '', // Use jobDescription as responsibilities
-  } : null;
+  const job = jobData
+    ? {
+        id: mockJobId,
+        title: jobData['Job Vacancy']?.name || '',
+        postNumber: jobData['Job Vacancy']?.postNumber || '',
+        type: jobData['Job Vacancy']?.employmentType || '',
+        category: jobData['Job Vacancy']?.departmentIdName || '',
+        closingDate: jobData['Job Vacancy']?.closesOn || '',
+        salary: jobData['Job Vacancy']?.salary || '',
+        location: jobData['Job Vacancy']?.location || '',
+        description: jobData['Job Vacancy']?.jobDescription || '',
+        requirements: jobData['Job Vacancy']?.requirements || '',
+        status: jobData['Job Vacancy']?.status || '',
+        isFavorite: false, // This would need to be managed separately
+        // Additional properties for compatibility
+        company: jobData['Job Vacancy']?.departmentIdName || '',
+        stipend: jobData['Job Vacancy']?.salary || '',
+        grade: '', // Not provided in API response
+        postedDate: jobData['Job Vacancy']?.postedOn || '',
+        reference: jobData['Job Vacancy']?.postNumber || '',
+        responsibilities: jobData['Job Vacancy']?.jobDescription || '', // Use jobDescription as responsibilities
+      }
+    : null;
 
   useEffect(() => {
     if (!jobData && !isLoading && error) {
-      navigate('/jobs');
+      navigate('/');
     }
   }, [jobData, isLoading, error, navigate]);
 
@@ -172,18 +210,35 @@ const JobDetailPage: React.FC = () => {
   const validateForm = () => {
     const errors: string[] = [];
 
-    if (!educationLevel) errors.push('education');
-    if (!isEmployed) errors.push('isEmployed');
     if (!criminalOffence) errors.push('criminalOffence');
     if (!pendingCriminalCase) errors.push('pendingCriminalCase');
     if (!dismissedForMisconduct) errors.push('dismissedForMisconduct');
     if (!pendingDisciplinaryCase) errors.push('pendingDisciplinaryCase');
     if (!resignedPendingDisciplinary) errors.push('resignedPendingDisciplinary');
-    if (!dischargedOnIllHealth) errors.push('dischargedOnIllHealth');
+    // dischargedOnIllHealth is commented out in the form, so removed from validation
     if (!businessWithState) errors.push('businessWithState');
-    if (businessWithState === 'yes' && !relinquishBusinessInterests) errors.push('relinquishBusinessInterests');
-    if (!privateSectorExperience) errors.push('privateSectorExperience');
-    if (!publicSectorExperience) errors.push('publicSectorExperience');
+    if (businessWithState === '636' && !relinquishBusinessInterests) errors.push('relinquishBusinessInterests');
+    if (!privateSectorExperience || privateSectorExperience === '') errors.push('privateSectorExperience');
+    if (!publicSectorExperience || publicSectorExperience === '') errors.push('publicSectorExperience');
+    if (!correspondenceMethod) errors.push('correspondenceMethod');
+    if (!prevEmploymentCondition) errors.push('prevEmploymentCondition');
+    if (!publicServiceBackground) errors.push('publicServiceBackground');
+
+    console.log('Validation errors:', errors);
+    console.log('Field values:', {
+      criminalOffence,
+      pendingCriminalCase,
+      dismissedForMisconduct,
+      pendingDisciplinaryCase,
+      resignedPendingDisciplinary,
+      businessWithState,
+      relinquishBusinessInterests,
+      privateSectorExperience,
+      publicSectorExperience,
+      correspondenceMethod,
+      prevEmploymentCondition,
+      publicServiceBackground,
+    });
 
     return errors;
   };
@@ -233,56 +288,96 @@ const JobDetailPage: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Prepare API payload
+      const payload = {
+        entityName: 'JobApplication',
+        requestName: 'UpsertRegEricruit',
+        inputParamters: {
+          Entity: {
+            yearsExperiencePrivateSector: privateSectorExperience,
+            YearsExperiencePublicSector: publicSectorExperience,
+            BusinessInterests: businessWithState,
+            HasPendingDisciplinaryCase: pendingDisciplinaryCase,
+            // DismissalDetails: dismissedForMisconduct === '636' ? dismissedForMisconductDetails : '',
+            // DismissedFromPublicService: dismissedForMisconduct === '636' ? 'Yes' : 'No',
+            HasPendingCriminalCase: pendingCriminalCase,
+            HasCriminalConviction: criminalOffence,
+            HasBusinessWithState: businessWithState,
+            BusinessWithStateDetails: businessWithState === '636' ? businessWithStateDetails : '',
+            PublicServiceBackground: publicServiceBackground,
+            LastPublicServicePosition: publicServiceBackground === '636' ? lastPublicServicePosition : '',
+            JobApplicantId: '6163C42B-16E3-466E-B356-60928E7912B2', // This should come from auth context
+            JobVacencyId: jobId || '8F8CD5B5-C20D-4B27-9AE4-01780064FD36',
+          },
+        },
+      };
 
-    // Generate application reference number
-    const generatedApplicationRef = `APP-${Date.now().toString().slice(-8)}-${job.postNumber || job.id.slice(-4).toUpperCase()}`;
-    setApplicationRef(generatedApplicationRef);
+      console.log('Submitting application with payload:', payload);
 
-    // Create application
-    const newApplication = {
-      id: `app_${Date.now()}`,
-      jobId: job.id,
-      jobTitle: job.title,
-      company: job.company,
-      appliedDate: new Date().toISOString().split('T')[0],
-      status: 'submitted' as const,
-      applicationRef: generatedApplicationRef,
-      educationLevel,
-      isEmployed: isEmployed || '',
-      applicationData: {
-        educationLevel,
-        isEmployed: isEmployed || '',
-        criminalOffence,
-        criminalOffenceDetails,
-        pendingCriminalCase,
-        pendingCriminalCaseDetails,
-        dismissedForMisconduct,
-        dismissedForMisconductDetails,
-        pendingDisciplinaryCase,
-        pendingDisciplinaryCaseDetails,
-        resignedPendingDisciplinary,
-        dischargedOnIllHealth,
-        businessWithState,
-        businessWithStateDetails,
-        relinquishBusinessInterests,
-        privateSectorExperience,
-        publicSectorExperience,
-      },
-    };
+      // Call the API
+      const response = await jobApply({ body: payload }).unwrap();
 
-    dispatch(addApplication(newApplication));
+      console.log('Application submitted successfully:', response);
 
-    setIsSubmitting(false);
-    setShowSuccess(true);
+      // Generate application reference number
+      const generatedApplicationRef = `APP-${Date.now().toString().slice(-8)}-${job.postNumber || job.id.slice(-4).toUpperCase()}`;
+      setApplicationRef(generatedApplicationRef);
+
+      // Create application for local state
+      const newApplication = {
+        id: `app_${Date.now()}`,
+        jobId: job.id,
+        jobTitle: job.title,
+        company: job.company,
+        appliedDate: new Date().toISOString().split('T')[0],
+        status: 'submitted' as const,
+        applicationRef: generatedApplicationRef,
+        educationLevel: '', // Not used in new form
+        isEmployed: '', // Not used in new form
+        applicationData: {
+          educationLevel: '', // Not used in new form
+          isEmployed: '', // Not used in new form
+          criminalOffence,
+          criminalOffenceDetails,
+          pendingCriminalCase,
+          pendingCriminalCaseDetails,
+          dismissedForMisconduct,
+          dismissedForMisconductDetails,
+          pendingDisciplinaryCase,
+          pendingDisciplinaryCaseDetails,
+          resignedPendingDisciplinary,
+          dischargedOnIllHealth,
+          businessWithState,
+          businessWithStateDetails,
+          relinquishBusinessInterests,
+          privateSectorExperience,
+          publicSectorExperience,
+          correspondenceMethod,
+          prevEmploymentCondition,
+          prevEmploymentDetails,
+          registrationDate,
+          registrationNumber,
+          publicServiceBackground,
+          lastPublicServicePosition,
+        },
+      };
+
+      dispatch(addApplication(newApplication));
+
+      setIsSubmitting(false);
+      setShowSuccess(true);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      setIsSubmitting(false);
+      // You might want to show an error message to the user here
+      setError('Failed to submit application. Please try again.');
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setShowSuccess(false);
-    setEducationLevel('');
-    setIsEmployed(null);
     setIsSubmitting(false);
     setValidationErrors([]);
     setApplicationRef('');
@@ -303,6 +398,13 @@ const JobDetailPage: React.FC = () => {
     setRelinquishBusinessInterests(null);
     setPrivateSectorExperience('');
     setPublicSectorExperience('');
+    setCorrespondenceMethod(null);
+    setPrevEmploymentCondition(null);
+    setPrevEmploymentDetails('');
+    setRegistrationDate('');
+    setRegistrationNumber('');
+    setPublicServiceBackground(null);
+    setLastPublicServicePosition('');
   };
 
   const handleToggleFavorite = () => {
@@ -479,10 +581,7 @@ const JobDetailPage: React.FC = () => {
           <section>
             <h2 className="text-lg font-semibold mb-4">{job.type === 'Learnership' ? 'Entry Requirements' : 'Requirements'}</h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <div 
-              className="text-gray-900 prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: job.requirements }}
-            />
+            <div className="text-gray-900 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: job.requirements }} />
           </section>
 
           <section>
@@ -490,10 +589,7 @@ const JobDetailPage: React.FC = () => {
               {job.type === 'Learnership' ? 'Learning Areas & Responsibilities' : 'Duties & Responsibilities'}
             </h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <div 
-              className="text-gray-900 prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: job.responsibilities }}
-            />
+            <div className="text-gray-900 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: job.responsibilities }} />
           </section>
 
           {/* Enquiries Section */}
@@ -596,62 +692,25 @@ const JobDetailPage: React.FC = () => {
               )}
 
               <div className="space-y-6 py-4 max-h-96 overflow-y-auto">
-                <div className="space-y-2">
-                  <Label htmlFor="education" className={hasError('education') ? 'text-red-600' : ''}>
-                    What is your Highest Education Level? {hasError('education') && <span className="text-red-500">*</span>}
-                  </Label>
-                  <Select value={educationLevel} onValueChange={setEducationLevel}>
-                    <SelectTrigger
-                      id="education"
-                      className={`w-full ${hasError('education') ? 'border-red-500 focus:border-red-500' : ''}`}
-                    >
-                      <SelectValue placeholder="Select your education level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="National Senior Certificate (NSC)">National Senior Certificate (NSC)</SelectItem>
-                      <SelectItem value="diploma">Diploma</SelectItem>
-                      <SelectItem value="associates">Associate's Degree</SelectItem>
-                      <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
-                      <SelectItem value="masters">Master's Degree</SelectItem>
-                      <SelectItem value="doctorate">Doctorate</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-3" id="isEmployed">
-                  <Label className={hasError('isEmployed') ? 'text-red-600' : ''}>
-                    Are you currently employed? {hasError('isEmployed') && <span className="text-red-500">*</span>}
-                  </Label>
-                  <RadioGroup value={isEmployed || ''} onValueChange={setIsEmployed}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="employed-yes" />
-                      <Label htmlFor="employed-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="employed-no" />
-                      <Label htmlFor="employed-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Criminal Offence Questions */}
-                <div className="space-y-3" id="criminalOffence">
+                {/* Question 1: Criminal Offence */}
+                <div className="space-y-3 px-2" id="criminalOffence">
                   <Label className={hasError('criminalOffence') ? 'text-red-600' : ''}>
                     Have you been convicted or found guilty of a criminal offence (including an admission of guilt)?{' '}
                     {hasError('criminalOffence') && <span className="text-red-500">*</span>}
                   </Label>
-                  <RadioGroup value={criminalOffence || ''} onValueChange={setCriminalOffence}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="criminal-yes" />
-                      <Label htmlFor="criminal-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="criminal-no" />
-                      <Label htmlFor="criminal-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                  {criminalOffence === 'yes' && (
+                  <Select value={criminalOffence || ''} onValueChange={setCriminalOffence}>
+                    <SelectTrigger className={`w-full ${hasError('criminalOffence') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {criminalOffence === '636' && (
                     <div className="space-y-2">
                       <Label htmlFor="criminal-details">If yes, provide the details:</Label>
                       <Input
@@ -665,22 +724,25 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="space-y-3" id="pendingCriminalCase">
+                {/* Question 2: Pending Criminal Case */}
+                <div className="space-y-3 px-2" id="pendingCriminalCase">
                   <Label className={hasError('pendingCriminalCase') ? 'text-red-600' : ''}>
                     Do you have any pending criminal case against you?{' '}
                     {hasError('pendingCriminalCase') && <span className="text-red-500">*</span>}
                   </Label>
-                  <RadioGroup value={pendingCriminalCase || ''} onValueChange={setPendingCriminalCase}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="pending-criminal-yes" />
-                      <Label htmlFor="pending-criminal-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="pending-criminal-no" />
-                      <Label htmlFor="pending-criminal-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                  {pendingCriminalCase === 'yes' && (
+                  <Select value={pendingCriminalCase || ''} onValueChange={setPendingCriminalCase}>
+                    <SelectTrigger className={`w-full ${hasError('pendingCriminalCase') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {pendingCriminalCase === '636' && (
                     <div className="space-y-2">
                       <Label htmlFor="pending-criminal-details">If yes, provide the details:</Label>
                       <Input
@@ -694,23 +756,25 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Dismissal and Disciplinary Questions */}
-                <div className="space-y-3" id="dismissedForMisconduct">
+                {/* Question 3: Dismissed for Misconduct */}
+                <div className="space-y-3 px-2" id="dismissedForMisconduct">
                   <Label className={hasError('dismissedForMisconduct') ? 'text-red-600' : ''}>
                     Have you ever been dismissed for misconduct from the Public Service?{' '}
                     {hasError('dismissedForMisconduct') && <span className="text-red-500">*</span>}
                   </Label>
-                  <RadioGroup value={dismissedForMisconduct || ''} onValueChange={setDismissedForMisconduct}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="dismissed-yes" />
-                      <Label htmlFor="dismissed-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="dismissed-no" />
-                      <Label htmlFor="dismissed-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                  {dismissedForMisconduct === 'yes' && (
+                  <Select value={dismissedForMisconduct || ''} onValueChange={setDismissedForMisconduct}>
+                    <SelectTrigger className={`w-full ${hasError('dismissedForMisconduct') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {dismissedForMisconduct === '636' && (
                     <div className="space-y-2">
                       <Label htmlFor="dismissed-details">If yes, provide the details:</Label>
                       <Input
@@ -724,22 +788,25 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="space-y-3" id="pendingDisciplinaryCase">
+                {/* Question 4: Pending Disciplinary Case */}
+                <div className="space-y-3 px-2" id="pendingDisciplinaryCase">
                   <Label className={hasError('pendingDisciplinaryCase') ? 'text-red-600' : ''}>
                     Do you have any pending disciplinary case against you?{' '}
                     {hasError('pendingDisciplinaryCase') && <span className="text-red-500">*</span>}
                   </Label>
-                  <RadioGroup value={pendingDisciplinaryCase || ''} onValueChange={setPendingDisciplinaryCase}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="pending-disciplinary-yes" />
-                      <Label htmlFor="pending-disciplinary-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="pending-disciplinary-no" />
-                      <Label htmlFor="pending-disciplinary-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                  {pendingDisciplinaryCase === 'yes' && (
+                  <Select value={pendingDisciplinaryCase || ''} onValueChange={setPendingDisciplinaryCase}>
+                    <SelectTrigger className={`w-full ${hasError('pendingDisciplinaryCase') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {pendingDisciplinaryCase === '636' && (
                     <div className="space-y-2">
                       <Label htmlFor="pending-disciplinary-details">If yes, provide the details:</Label>
                       <Input
@@ -753,59 +820,67 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Resignation Question */}
-                <div className="space-y-3" id="resignedPendingDisciplinary">
+                {/* Question 5: Resigned Pending Disciplinary */}
+                <div className="space-y-3 px-2" id="resignedPendingDisciplinary">
                   <Label className={hasError('resignedPendingDisciplinary') ? 'text-red-600' : ''}>
                     Have you resigned from a recent job pending any disciplinary proceeding against you?{' '}
                     {hasError('resignedPendingDisciplinary') && <span className="text-red-500">*</span>}
                   </Label>
-                  <RadioGroup value={resignedPendingDisciplinary || ''} onValueChange={setResignedPendingDisciplinary}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="resigned-yes" />
-                      <Label htmlFor="resigned-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="resigned-no" />
-                      <Label htmlFor="resigned-no">No</Label>
-                    </div>
-                  </RadioGroup>
+                  <Select value={resignedPendingDisciplinary || ''} onValueChange={setResignedPendingDisciplinary}>
+                    <SelectTrigger
+                      className={`w-full ${hasError('resignedPendingDisciplinary') ? 'border-red-500 focus:border-red-500' : ''}`}
+                    >
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* Discharge/Retirement Question */}
-                <div className="space-y-3" id="dischargedOnIllHealth">
+                {/* Question 6: Discharged on Ill-health */}
+                {/* <div className="space-y-3 px-2" id="dischargedOnIllHealth">
                   <Label className={hasError('dischargedOnIllHealth') ? 'text-red-600' : ''}>
                     Have you been discharged or retired from the Public Service on grounds of Ill-health or on condition that you cannot be
                     re-employed? {hasError('dischargedOnIllHealth') && <span className="text-red-500">*</span>}
                   </Label>
-                  <RadioGroup value={dischargedOnIllHealth || ''} onValueChange={setDischargedOnIllHealth}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="discharged-yes" />
-                      <Label htmlFor="discharged-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="discharged-no" />
-                      <Label htmlFor="discharged-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                  <Select value={dischargedOnIllHealth || ''} onValueChange={setDischargedOnIllHealth}>
+                    <SelectTrigger className={`w-full ${hasError('dischargedOnIllHealth') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div> */}
 
-                {/* Business Interests Questions */}
-                <div className="space-y-3" id="businessWithState">
+                {/* Question 7: Business with State */}
+                <div className="space-y-3 px-2" id="businessWithState">
                   <Label className={hasError('businessWithState') ? 'text-red-600' : ''}>
                     Are you conducting business with the State or are you a Director of a Public or Private company conducting business with
                     the State? {hasError('businessWithState') && <span className="text-red-500">*</span>}
                   </Label>
-                  <RadioGroup value={businessWithState || ''} onValueChange={setBusinessWithState}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="business-yes" />
-                      <Label htmlFor="business-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="business-no" />
-                      <Label htmlFor="business-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                  {businessWithState === 'yes' && (
+                  <Select value={businessWithState || ''} onValueChange={setBusinessWithState}>
+                    <SelectTrigger className={`w-full ${hasError('businessWithState') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {businessWithState === '636' && (
                     <div className="space-y-2">
                       <Label htmlFor="business-details">If yes, provide the details:</Label>
                       <Input
@@ -819,27 +894,32 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
 
-                {businessWithState === 'yes' && (
-                  <div className="space-y-3" id="relinquishBusinessInterests">
+                {/* Question 8: Relinquish Business Interests */}
+                {businessWithState === '636' && (
+                  <div className="space-y-3 px-2" id="relinquishBusinessInterests">
                     <Label className={hasError('relinquishBusinessInterests') ? 'text-red-600' : ''}>
                       In the event that you are employed in the Public Service, will you immediately relinquish such business interests?{' '}
                       {hasError('relinquishBusinessInterests') && <span className="text-red-500">*</span>}
                     </Label>
-                    <RadioGroup value={relinquishBusinessInterests || ''} onValueChange={setRelinquishBusinessInterests}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="relinquish-yes" />
-                        <Label htmlFor="relinquish-yes">Yes</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="relinquish-no" />
-                        <Label htmlFor="relinquish-no">No</Label>
-                      </div>
-                    </RadioGroup>
+                    <Select value={relinquishBusinessInterests || ''} onValueChange={setRelinquishBusinessInterests}>
+                      <SelectTrigger
+                        className={`w-full ${hasError('relinquishBusinessInterests') ? 'border-red-500 focus:border-red-500' : ''}`}
+                      >
+                        <SelectValue placeholder="Select an option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getMasterOptions('YesNoId').map((option: any) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.lable}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 )}
 
-                {/* Experience Questions */}
-                <div className="space-y-3">
+                {/* Question 9: Experience */}
+                <div className="space-y-3 px-2">
                   <Label>Please specify the total number of years of experience you have:</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -870,6 +950,122 @@ const JobDetailPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Question 10: Registration Details */}
+                <div className="space-y-3 px-2">
+                  <Label>
+                    If your profession or occupation requires official registration, provide date and particulars of registration:
+                  </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="registration-date">Date</Label>
+                      <Input
+                        id="registration-date"
+                        type="date"
+                        value={registrationDate}
+                        onChange={(e) => setRegistrationDate(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="registration-number">Reg. No</Label>
+                      <Input
+                        id="registration-number"
+                        value={registrationNumber}
+                        onChange={(e) => setRegistrationNumber(e.target.value)}
+                        placeholder="Registration Number"
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Question 11: Correspondence Method */}
+                <div className="space-y-3 px-2" id="correspondenceMethod">
+                  <Label className={hasError('correspondenceMethod') ? 'text-red-600' : ''}>
+                    Method for correspondence {hasError('correspondenceMethod') && <span className="text-red-500">*</span>}
+                  </Label>
+                  <Select value={correspondenceMethod || ''} onValueChange={setCorrespondenceMethod}>
+                    <SelectTrigger className={`w-full ${hasError('correspondenceMethod') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select a method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('MethodsOfCommunicating').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Question 12: Previous Employment Condition */}
+                <div className="space-y-3 px-2" id="prevEmploymentCondition">
+                  <Label className={hasError('prevEmploymentCondition') ? 'text-red-600' : ''}>
+                    If you were previously employed in the Public Service, is there any condition that prevents your reappointment?{' '}
+                    {hasError('prevEmploymentCondition') && <span className="text-red-500">*</span>}
+                  </Label>
+                  <Select value={prevEmploymentCondition || ''} onValueChange={setPrevEmploymentCondition}>
+                    <SelectTrigger className={`w-full ${hasError('prevEmploymentCondition') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {prevEmploymentCondition === '636' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="prev-employment-details">
+                        If yes, provide the name of the previous employing department and indicate the nature of the condition:
+                      </Label>
+                      <Input
+                        id="prev-employment-details"
+                        value={prevEmploymentDetails}
+                        onChange={(e) => setPrevEmploymentDetails(e.target.value)}
+                        placeholder="Please provide details of the condition"
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Question 13: Public Service Background */}
+                <div className="space-y-3 px-2" id="publicServiceBackground">
+                  <Label className={hasError('publicServiceBackground') ? 'text-red-600' : ''}>
+                    Do you have a Public Service Background?{' '}
+                    {hasError('publicServiceBackground') && <span className="text-red-500">*</span>}
+                  </Label>
+                  <Select value={publicServiceBackground || ''} onValueChange={setPublicServiceBackground}>
+                    <SelectTrigger className={`w-full ${hasError('publicServiceBackground') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMasterOptions('YesNoId').map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.lable}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Question 14: Last Public Service Position - Only show if Yes is selected */}
+                {publicServiceBackground === '636' && (
+                  <div className="space-y-3 px-2">
+                    <Label htmlFor="last-public-service-position">Last Public Service Position</Label>
+                    <Input
+                      id="last-public-service-position"
+                      value={lastPublicServicePosition}
+                      onChange={(e) => setLastPublicServicePosition(e.target.value)}
+                      placeholder="Your last position in public service"
+                      className="w-full"
+                    />
+                  </div>
+                )}
               </div>
 
               <DialogFooter className="sm:justify-between">
