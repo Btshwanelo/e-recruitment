@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, MapPin, Heart, Grid, Map, X, CopyXIcon, TableOfContents, LayoutGrid } from 'lucide-react';
+import { Search, MapPin, Heart, TableOfContents, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,10 +31,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const JobOpeningsPage = () => {
-  const [searchTags, setSearchTags] = useState<string[]>(['Learnership', 'Graduate']);
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid'); // Add view mode state
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -106,9 +106,6 @@ const JobOpeningsPage = () => {
     fetchJobs(1);
   }, [dispatch, getJobs]);
 
-  const removeTag = (tag: string) => {
-    setSearchTags(searchTags.filter((t) => t !== tag));
-  };
 
   const toggleSaveJob = (jobId: string) => {
     if (savedJobs.includes(jobId)) {
@@ -116,6 +113,11 @@ const JobOpeningsPage = () => {
     } else {
       setSavedJobs([...savedJobs, jobId]);
     }
+  };
+
+  // Add view mode toggle handler
+  const handleViewModeChange = (mode: 'grid' | 'table') => {
+    setViewMode(mode);
   };
 
   // Format job data for display
@@ -311,16 +313,18 @@ const JobOpeningsPage = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Image Section */}
-          <div className="hidden lg:block">
-            <div className="sticky top-8 space-y-4">
-              <img src={LoginBg} alt="Worker with South African flag" className="w-full object-cover rounded-lg" />
+        <div className={`grid grid-cols-1 gap-8 ${viewMode === 'table' ? 'lg:grid-cols-1' : 'lg:grid-cols-3'}`}>
+          {/* Image Section - Hidden in table view */}
+          {viewMode === 'grid' && (
+            <div className="hidden lg:block">
+              <div className="sticky top-8 space-y-4">
+                <img src={LoginBg} alt="Worker with South African flag" className="w-full object-cover rounded-lg" />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Jobs Listing */}
-          <div className="lg:col-span-2">
+          <div className={viewMode === 'table' ? 'w-full' : 'lg:col-span-2'}>
             {/* Sort Options */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex gap-4">
@@ -330,16 +334,26 @@ const JobOpeningsPage = () => {
                 <button className="text-sm text-gray-600 hover:text-gray-900">Sort by title</button> */}
               </div>
               <div className="flex">
-                <button className="p-2 border-2 border-[#D0D5DD] rounded-tl-[8px] rounded-bl-[8px]">
-                  <TableOfContents className="w-5 h-5 text-[#344054]" />
+                <button 
+                  className={`p-2 border-2 border-[#D0D5DD] rounded-tl-[8px] rounded-bl-[8px] ${
+                    viewMode === 'table' ? 'bg-[#0086C9] text-white' : 'bg-white text-[#344054]'
+                  }`}
+                  onClick={() => handleViewModeChange('table')}
+                >
+                  <TableOfContents className="w-5 h-5" />
                 </button>
-                <button className="p-2 border-t-2 border-b-2 border-r-2 border-[#D0D5DD] rounded-tr-[8px] rounded-br-[8px]">
+                <button 
+                  className={`p-2 border-t-2 border-b-2 border-r-2 border-[#D0D5DD] rounded-tr-[8px] rounded-br-[8px] ${
+                    viewMode === 'grid' ? 'bg-[#0086C9] text-white' : 'bg-white text-[#344054]'
+                  }`}
+                  onClick={() => handleViewModeChange('grid')}
+                >
                   <LayoutGrid className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Job Cards */}
+            {/* Job Cards/Table */}
             <div className="space-y-2">
               {jobs.length === 0 ? (
                 <Card className="bg-white border border-[#E4E7EC]">
@@ -358,7 +372,8 @@ const JobOpeningsPage = () => {
                     </div>
                   </CardContent>
                 </Card>
-              ) : (
+              ) : viewMode === 'grid' ? (
+                // Grid View (existing implementation)
                 jobs.map((job: any) => {
                   const displayJob = formatJobForDisplay(job);
                   return (
@@ -393,6 +408,70 @@ const JobOpeningsPage = () => {
                     </Card>
                   );
                 })
+              ) : (
+                // Table View (new implementation)
+                <div className="bg-white border border-[#E4E7EC] rounded-lg overflow-hidden w-full">
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-full">
+                      <thead className="bg-gray-50 border-b border-[#E4E7EC]">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Details</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Closing Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-[#E4E7EC]">
+                        {jobs.map((job: any) => {
+                          const displayJob = formatJobForDisplay(job);
+                          return (
+                            <tr key={job.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4">
+                                <div>
+                                  <div className="text-sm text-[#026AA2] font-bold">{displayJob.id}</div>
+                                  <div className="text-lg font-semibold text-[#101828] mb-1">{displayJob.title}</div>
+                                  <div className="text-sm text-[#475467] line-clamp-2">{displayJob.description}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center text-sm text-gray-500">
+                                  <MapPin className="w-4 h-4 mr-1" />
+                                  {displayJob.location}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{displayJob.type}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-sm text-gray-500">
+                                  {new Date(displayJob.closingDate).toLocaleDateString('en-GB')}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-[#0086C9] hover:bg-[#0086C9]" 
+                                    onClick={() => navigate(`/jobs/${displayJob.jobVacancyId}`)}
+                                  >
+                                    Apply
+                                  </Button>
+                                  <button 
+                                    onClick={() => toggleSaveJob(job.id)} 
+                                    className="p-2 border border-[#7CD4FD] rounded hover:bg-gray-50"
+                                  >
+                                    <Heart className={`w-4 h-4 ${savedJobs.includes(job.id) ? 'fill-red-500 text-red-500' : 'text-[#026AA2]'}`} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
             </div>
 
