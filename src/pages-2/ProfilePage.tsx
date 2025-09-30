@@ -841,6 +841,7 @@ const ProfilePage: React.FC = () => {
         } as any; // Type assertion to handle dynamic CV fields
       }
 
+      
       const updatePayload = {
         body: {
           entityName: 'Applicant',

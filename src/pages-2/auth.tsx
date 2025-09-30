@@ -6,10 +6,18 @@ import * as Yup from 'yup';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useExternalRequestMutation, useExecuteRequest2Mutation, useExecuteRequest3Mutation } from '@/slices/services';
+import {
+  useExternalRequestMutation,
+  useExecuteRequest2Mutation,
+  useExecuteRequest3Mutation,
+  useExecuteRequest5Mutation,
+} from '@/slices/services';
 import { setAuthData } from '@/slices/authSlice';
 import { updateProfileDetails } from '@/slices/detailsSlice';
 import { RootState } from '@/store';
+import OTPModal from '@/components/OTPModal';
+import { showErrorToast } from '@/components/ErrorToast ';
+import { showSuccessToast } from '@/components/SuccessToast';
 
 // Validation schemas
 const signupValidationSchema = Yup.object({
@@ -38,9 +46,17 @@ const AuthPageV2 = () => {
   const navigate = useNavigate();
   const redirectPath = useSelector((state: RootState) => state.auth.redirectPath);
 
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+
   const [userLogin] = useExternalRequestMutation();
   const [registerUser] = useExecuteRequest3Mutation();
   const [retrieveCurrentUser] = useExecuteRequest2Mutation();
+
+  const [supplierGeneratOTPExecuteRequest, { isLoading: isLoadingOTP }] = useExecuteRequest3Mutation();
+  const [supplierConfirmOTPExecuteRequest, { isLoading: isLoadingConfirm, isError: isErrorConfirmOTP, error: errorConfirmOTP }] =
+    useExecuteRequest5Mutation();
 
   // API error states
   const [apiErrors, setApiErrors] = useState<{
@@ -91,75 +107,75 @@ const AuthPageV2 = () => {
       console.log('Profile Response:', profileResponse);
       console.log('Profile Response Status:', profileResponse.results?.StatusCode);
       console.log('Profile Response Output:', profileResponse);
-      
+
       if (profileResponse.results?.StatusCode === 200) {
         // Handle both old and new response structures
         const response = profileResponse?.response || profileResponse;
-        
+
         if (response) {
-        dispatch(
-          updateProfileDetails({
-            UserType: null, // Not provided in API response
-            Name: response.Name,
-            Surname: response.Surname,
-            Email: response.Email,
-            IdNumber: response.IdNumber,
-            Mobile: response.Mobile,
-            ProfileSteps: response.ProfileSteps?.toString() || null,
-            isProfileComplete: response.isProfileComplete,
-            currentProfileStep: response.ProfileSteps,
-            currentStepDescription: response.currentStepDescription,
-            completionPercentage: response.completionPercentage,
-            progressSteps: response.progressSteps || [],
-            applicantDetails: response.applicantDetails || {
-              personalInfo: {
-                firstName: null,
-                lastName: null,
-                initial: null,
-                idNumber: null,
-                age: null,
-                dateOfBirth: null,
-                passportNumber: null,
-                genderId: 0,
-                titleId: 0,
-                raceId: 0,
-                rightToWorkStatusId: 0,
-                disabilityStatusId: 0,
+          dispatch(
+            updateProfileDetails({
+              UserType: null, // Not provided in API response
+              Name: response.Name,
+              Surname: response.Surname,
+              Email: response.Email,
+              IdNumber: response.IdNumber,
+              Mobile: response.Mobile,
+              ProfileSteps: response.ProfileSteps?.toString() || null,
+              isProfileComplete: response.isProfileComplete,
+              currentProfileStep: response.ProfileSteps,
+              currentStepDescription: response.currentStepDescription,
+              completionPercentage: response.completionPercentage,
+              progressSteps: response.progressSteps || [],
+              applicantDetails: response.applicantDetails || {
+                personalInfo: {
+                  firstName: null,
+                  lastName: null,
+                  initial: null,
+                  idNumber: null,
+                  age: null,
+                  dateOfBirth: null,
+                  passportNumber: null,
+                  genderId: 0,
+                  titleId: 0,
+                  raceId: 0,
+                  rightToWorkStatusId: 0,
+                  disabilityStatusId: 0,
+                },
+                contactInfo: {
+                  email: null,
+                  mobile: null,
+                  alternativeNumber: null,
+                  streetAddress: null,
+                  city: null,
+                  provinceId: 0,
+                  postalCode: null,
+                  country: null,
+                },
+                qualifications: {
+                  qualificationName: null,
+                  institution: null,
+                  yearObtained: 0,
+                },
+                workExperience: {
+                  companyName: null,
+                  position: null,
+                  fromDate: null,
+                  toDate: null,
+                  reasonForLeaving: null,
+                },
+                documents: {
+                  cv: null,
+                  idDocument: null,
+                  qualificationsDoc: null,
+                },
+                languages: {
+                  language: null,
+                  proficiencyLevel: null,
+                },
               },
-              contactInfo: {
-                email: null,
-                mobile: null,
-                alternativeNumber: null,
-                streetAddress: null,
-                city: null,
-                provinceId: 0,
-                postalCode: null,
-                country: null,
-              },
-              qualifications: {
-                qualificationName: null,
-                institution: null,
-                yearObtained: 0,
-              },
-              workExperience: {
-                companyName: null,
-                position: null,
-                fromDate: null,
-                toDate: null,
-                reasonForLeaving: null,
-              },
-              documents: {
-                cv: null,
-                idDocument: null,
-                qualificationsDoc: null,
-              },
-              languages: {
-                language: null,
-                proficiencyLevel: null,
-              },
-            },
-          })
-        );
+            })
+          );
 
           // Navigate based on profile completion status
           if (response.isProfileComplete) {
@@ -184,6 +200,53 @@ const AuthPageV2 = () => {
     }
   };
 
+  const handleRequestOTP = async (email: string) => {
+    try {
+      await supplierGeneratOTPExecuteRequest({
+        body: {
+          requestName: 'GenerateOTP',
+          inputParamters: {
+            OTPInformation: {
+              email: email,
+            },
+          },
+        },
+      }).unwrap();
+      setPendingEmail(email);
+      setOtpModalOpen(true);
+      showSuccessToast('OTP sent to your email');
+    } catch (error) {
+      showErrorToast('Failed to send OTP. Please try again.');
+    }
+  };
+
+  const handleVerifyOTP = async (otp: string) => {
+    if (!otp) {
+      showErrorToast('Please enter OTP');
+      return;
+    }
+
+    try {
+      await supplierConfirmOTPExecuteRequest({
+        body: {
+          requestName: 'ConfirmOTP',
+          inputParamters: {
+            OTPInformation: {
+              OTPNo: otp,
+              email: pendingEmail,
+            },
+          },
+        },
+      }).unwrap();
+      setOtpModalOpen(false);
+      setEmailVerified(true);
+      showSuccessToast('Email verified successfully');
+    } catch (error) {
+      console.log('error : confirm OTP');
+      showErrorToast('Invalid OTP. Please try again.');
+    }
+  };
+
   // Handle signup
   const handleSignup = async (values: {
     email: string;
@@ -193,6 +256,11 @@ const AuthPageV2 = () => {
     phone: string;
     password: string;
   }) => {
+    if (!emailVerified) {
+      showErrorToast('Please verify your email before proceeding');
+      return;
+    }
+
     setIsLoading(true);
     setApiErrors({});
 
@@ -243,79 +311,74 @@ const AuthPageV2 = () => {
         },
       }).unwrap();
 
-      // Step 5: Save profile data to Redux store
-      console.log('Signup Profile Response:', profileResponse);
-      console.log('Signup Profile Response Status:', profileResponse.results?.StatusCode);
-      console.log('Signup Profile Response Output:', profileResponse);
-      
       if (profileResponse.results?.StatusCode === 200) {
         // Handle both old and new response structures
         const response = profileResponse?.response || profileResponse;
-        
+
         if (response) {
-        dispatch(
-          updateProfileDetails({
-            UserType: null, // Not provided in API response
-            Name: response.Name,
-            Surname: response.Surname,
-            Email: response.Email,
-            IdNumber: response.IdNumber,
-            Mobile: response.Mobile,
-            ProfileSteps: response.ProfileSteps?.toString() || null,
-            isProfileComplete: response.isProfileComplete,
-            currentProfileStep: response.ProfileSteps,
-            currentStepDescription: response.currentStepDescription,
-            completionPercentage: response.completionPercentage,
-            progressSteps: response.progressSteps || [],
-            applicantDetails: response.applicantDetails || {
-              personalInfo: {
-                firstName: null,
-                lastName: null,
-                initial: null,
-                idNumber: null,
-                age: null,
-                dateOfBirth: null,
-                passportNumber: null,
-                genderId: 0,
-                titleId: 0,
-                raceId: 0,
-                rightToWorkStatusId: 0,
-                disabilityStatusId: 0,
+          dispatch(
+            updateProfileDetails({
+              UserType: null, // Not provided in API response
+              Name: response.Name,
+              Surname: response.Surname,
+              Email: response.Email,
+              IdNumber: response.IdNumber,
+              Mobile: response.Mobile,
+              ProfileSteps: response.ProfileSteps?.toString() || null,
+              isProfileComplete: response.isProfileComplete,
+              currentProfileStep: response.ProfileSteps,
+              currentStepDescription: response.currentStepDescription,
+              completionPercentage: response.completionPercentage,
+              progressSteps: response.progressSteps || [],
+              applicantDetails: response.applicantDetails || {
+                personalInfo: {
+                  firstName: null,
+                  lastName: null,
+                  initial: null,
+                  idNumber: null,
+                  age: null,
+                  dateOfBirth: null,
+                  passportNumber: null,
+                  genderId: 0,
+                  titleId: 0,
+                  raceId: 0,
+                  rightToWorkStatusId: 0,
+                  disabilityStatusId: 0,
+                },
+                contactInfo: {
+                  email: null,
+                  mobile: null,
+                  alternativeNumber: null,
+                  streetAddress: null,
+                  city: null,
+                  provinceId: 0,
+                  postalCode: null,
+                  country: null,
+                },
+                qualifications: {
+                  qualificationName: null,
+                  institution: null,
+                  yearObtained: 0,
+                },
+                workExperience: {
+                  companyName: null,
+                  position: null,
+                  fromDate: null,
+                  toDate: null,
+                  reasonForLeaving: null,
+                },
+                documents: {
+                  cv: null,
+                  idDocument: null,
+                  qualificationsDoc: null,
+                },
+                languages: {
+                  language: null,
+                  proficiencyLevel: null,
+                },
               },
-              contactInfo: {
-                email: null,
-                mobile: null,
-                alternativeNumber: null,
-                streetAddress: null,
-                city: null,
-                provinceId: 0,
-                postalCode: null,
-                country: null,
-              },
-              qualifications: {
-                qualificationName: null,
-                institution: null,
-                yearObtained: 0,
-              },
-              workExperience: {
-                companyName: null,
-                position: null,
-                fromDate: null,
-                toDate: null,
-                reasonForLeaving: null,
-              },
-              documents: {
-                cv: null,
-                idDocument: null,
-                qualificationsDoc: null,
-              },
-              languages: {
-                language: null,
-                proficiencyLevel: null,
-              },
-            },
-          })
-        );
+            })
+          );
 
           // Step 6: Navigate based on profile completion status
           if (response.isProfileComplete) {
@@ -344,6 +407,16 @@ const AuthPageV2 = () => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setApiErrors({});
+    setEmailVerified(false);
+    setPendingEmail('');
+  };
+
+  // Reset verification when email changes
+  const handleEmailChange = (email: string) => {
+    if (email !== pendingEmail) {
+      setEmailVerified(false);
+      setPendingEmail('');
+    }
   };
 
   return (
@@ -425,16 +498,42 @@ const AuthPageV2 = () => {
                     </label>
                     <Field name="email">
                       {({ field }: any) => (
-                        <Input
-                          {...field}
-                          id="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          className={`w-full ${errors.email && touched.email ? 'border-red-500' : 'border-gray-300'}`}
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            {...field}
+                            id="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            className={`flex-1 ${errors.email && touched.email ? 'border-red-500' : 'border-gray-300'}`}
+                            onChange={(e: any) => {
+                              field.onChange(e);
+                              handleEmailChange(e.target.value);
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              if (field.value && !errors.email) {
+                                handleRequestOTP(field.value);
+                              } else {
+                                showErrorToast('Please enter a valid email first');
+                              }
+                            }}
+                            disabled={!field.value || !!errors.email || isLoadingOTP}
+                            className="px-4 py-2 bg-[#005f33] text-white text-sm font-medium disabled:bg-gray-400"
+                          >
+                            {isLoadingOTP ? 'Sending...' : emailVerified ? 'Verified ✓' : 'Verify'}
+                          </Button>
+                        </div>
                       )}
                     </Field>
                     <ErrorMessage name="email" component="p" className="mt-1 text-sm text-red-600" />
+                    {emailVerified && (
+                      <p className="mt-1 text-sm text-green-600 flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Email verified successfully
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -449,7 +548,8 @@ const AuthPageV2 = () => {
                             id="firstName"
                             type="text"
                             placeholder="Enter first name"
-                            className={`w-full ${errors.firstName && touched.firstName ? 'border-red-500' : 'border-gray-300'}`}
+                            disabled={!emailVerified}
+                            className={`w-full ${errors.firstName && touched.firstName ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                         )}
                       </Field>
@@ -467,7 +567,8 @@ const AuthPageV2 = () => {
                             id="lastName"
                             type="text"
                             placeholder="Enter last name"
-                            className={`w-full ${errors.lastName && touched.lastName ? 'border-red-500' : 'border-gray-300'}`}
+                            disabled={!emailVerified}
+                            className={`w-full ${errors.lastName && touched.lastName ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                         )}
                       </Field>
@@ -486,7 +587,8 @@ const AuthPageV2 = () => {
                           id="idNumber"
                           type="text"
                           placeholder="Enter your ID number"
-                          className={`w-full ${errors.idNumber && touched.idNumber ? 'border-red-500' : 'border-gray-300'}`}
+                          disabled={!emailVerified}
+                          className={`w-full ${errors.idNumber && touched.idNumber ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         />
                       )}
                     </Field>
@@ -504,7 +606,8 @@ const AuthPageV2 = () => {
                           id="phone"
                           type="tel"
                           placeholder="Enter your cellphone number"
-                          className={`w-full ${errors.phone && touched.phone ? 'border-red-500' : 'border-gray-300'}`}
+                          disabled={!emailVerified}
+                          className={`w-full ${errors.phone && touched.phone ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         />
                       )}
                     </Field>
@@ -523,18 +626,16 @@ const AuthPageV2 = () => {
                             id="password"
                             type={showPassword ? 'text' : 'password'}
                             placeholder="Create a password"
-                            className={`w-full pr-10 ${errors.password && touched.password ? 'border-red-500' : 'border-gray-300'}`}
+                            disabled={!emailVerified}
+                            className={`w-full pr-10 ${errors.password && touched.password ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                           <button
                             type="button"
                             className="absolute inset-y-0 right-0 pr-3 flex items-center"
                             onClick={() => setShowPassword(!showPassword)}
+                            disabled={!emailVerified}
                           >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-400" />
-                            )}
+                            {showPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
                           </button>
                         </div>
                       )}
@@ -554,18 +655,16 @@ const AuthPageV2 = () => {
                             id="confirmPassword"
                             type={showConfirmPassword ? 'text' : 'password'}
                             placeholder="Confirm your password"
-                            className={`w-full pr-10 ${errors.confirmPassword && touched.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
+                            disabled={!emailVerified}
+                            className={`w-full pr-10 ${errors.confirmPassword && touched.confirmPassword ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                           <button
                             type="button"
                             className="absolute inset-y-0 right-0 pr-3 flex items-center"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            disabled={!emailVerified}
                           >
-                            {showConfirmPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-400" />
-                            )}
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
                           </button>
                         </div>
                       )}
@@ -598,8 +697,12 @@ const AuthPageV2 = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
-                    {isLoading ? 'Creating account...' : 'Get started'}
+                  <Button
+                    type="submit"
+                    className="w-full py-6 bg-[#005f33] font-semibold text-white disabled:bg-gray-400"
+                    disabled={isLoading || !emailVerified}
+                  >
+                    {isLoading ? 'Creating account...' : !emailVerified ? 'Verify email to continue' : 'Get started'}
                   </Button>
                 </Form>
               );
@@ -653,11 +756,7 @@ const AuthPageV2 = () => {
                           className="absolute inset-y-0 right-0 pr-3 flex items-center"
                           onClick={() => setShowLoginPassword(!showLoginPassword)}
                         >
-                          {showLoginPassword ? (
-                            <EyeOff className="h-4 w-4 text-gray-400" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-gray-400" />
-                          )}
+                          {showLoginPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
                         </button>
                       </div>
                     )}
@@ -712,6 +811,23 @@ const AuthPageV2 = () => {
           </div>
         </div>
       </div>
+
+      {otpModalOpen && (
+        <OTPModal
+          isOpen={otpModalOpen}
+          onClose={() => setOtpModalOpen(false)}
+          onConfirm={handleVerifyOTP}
+          onNewOtp={handleRequestOTP}
+          length={4}
+          isLoading={isLoadingOTP}
+          isLoadingSubmit={isLoadingConfirm}
+          isError={isErrorConfirmOTP}
+          errorMessage={errorConfirmOTP?.data || 'Incorrect OTP'}
+          data-testid="signup-otp-modal"
+          title="please check your phone"
+          description={`We've sent a code to your phone number`}
+        />
+      )}
     </div>
   );
 };

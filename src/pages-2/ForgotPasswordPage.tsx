@@ -140,7 +140,7 @@ const ForgotPasswordPage = () => {
         
 
         {/* Heading */}
-        <div className="text-center mb-6">
+        {/* <div className="text-center mb-6">
           <h1 className="text-3xl font-semibold text-gray-900">
             {step === 'email' && 'Reset Your Password'}
             {step === 'otp' && 'Verify Your Email'}
@@ -151,7 +151,7 @@ const ForgotPasswordPage = () => {
             {step === 'otp' && `We've sent a 6-digit code to ${email}`}
             {step === 'reset' && 'Enter your new password below'}
           </p>
-        </div>
+        </div> */}
 
         {/* General Error messages */}
         {errors.general && (
