@@ -107,6 +107,7 @@ interface JobsState {
     type: string;
     category: string;
     searchTerm: string;
+    employmentType: string;
   };
   pagination: {
     currentPage: number;
@@ -529,6 +530,7 @@ const initialState: JobsState = {
     type: '',
     category: '',
     searchTerm: '',
+    employmentType: 'all',
   },
   pagination: {
     currentPage: 1,
@@ -635,7 +637,12 @@ const jobsSlice = createSlice({
         type: '',
         category: '',
         searchTerm: '',
+        employmentType: 'all',
       };
+      state.pagination.currentPage = 1;
+    },
+    resetPagination: (state) => {
+      state.pagination.currentPage = 1;
     },
 
     // Loading and error states
@@ -710,6 +717,7 @@ export const {
   setCurrentPage,
   setPageSize,
   setPagination,
+  resetPagination,
   clearJobs,
 } = jobsSlice.actions;
 

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Search, MapPin, Heart, ChevronLeft, Grid, Map, X } from 'lucide-react';
+import { Search, MapPin, Heart, Grid, Map, X, CopyXIcon, TableOfContents, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import MultiSelect from '@/components/ui/multi-select';
 import LoginBg from '@/assets/mockup.png';
 import {
   Pagination,
@@ -18,12 +18,34 @@ import HeaderV2 from './Header';
 import Footer from '@/components/Footer';
 import { useExecuteRequest1Mutation } from '@/slices/services';
 import { useSelector, useDispatch } from 'react-redux';
-import { setJobsFromApi, setLoading, setError, setCurrentPage, selectPagination } from '@/slices/jobsSlice';
+import {
+  setJobsFromApi,
+  setLoading,
+  setError,
+  setCurrentPage,
+  selectPagination,
+  setFilters,
+  clearFilters,
+  resetPagination,
+} from '@/slices/jobsSlice';
+import { useNavigate } from 'react-router-dom';
 
 const JobOpeningsPage = () => {
   const [searchTags, setSearchTags] = useState<string[]>(['Learnership', 'Graduate']);
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Employment type options
+  const employmentTypeOptions = [
+    { value: 'Internship', label: 'Internship' },
+    { value: 'Learnership', label: 'Learnership' },
+    { value: 'Full Time', label: 'Full Time' },
+    { value: 'Part Time', label: 'Part Time' },
+    { value: 'Contract', label: 'Contract' },
+  ];
 
   const [getJobs] = useExecuteRequest1Mutation();
 
@@ -34,11 +56,17 @@ const JobOpeningsPage = () => {
   const pagination = useSelector(selectPagination);
 
   // Fetch jobs from API
-  const fetchJobs = async (pageNumber: number = 1) => {
+  const fetchJobs = async (pageNumber: number = 1, searchText: string = '', empTypes: string[] = []) => {
     try {
       dispatch(setLoading(true));
       dispatch(setError(null));
-      
+
+      // Build employment type filter
+      let employmentTypeFilter = 'Internship, Learnership';
+      if (empTypes.length > 0) {
+        employmentTypeFilter = empTypes.join(', ');
+      }
+
       const result = await getJobs({
         body: {
           RequestName: 'JobVacancyListing',
@@ -46,21 +74,23 @@ const JobOpeningsPage = () => {
           InputParamters: {
             PageNumber: pageNumber,
             PageSize: 12,
-            SearchText: '',
-            EmploymentType: 'Internship, Learnership',
+            SearchText: searchText,
+            EmploymentType: employmentTypeFilter,
           },
         },
       }).unwrap();
 
       if (result?.Listing) {
-        dispatch(setJobsFromApi({
-          jobs: result.Listing,
-          pagination: {
-            pageSize: result.PageSize,
-            recordCount: result.RecordCount,
-            pages: result.Pages,
-          }
-        }));
+        dispatch(
+          setJobsFromApi({
+            jobs: result.Listing,
+            pagination: {
+              pageSize: result.PageSize,
+              recordCount: result.RecordCount,
+              pages: result.Pages,
+            },
+          })
+        );
         dispatch(setCurrentPage(pageNumber));
       }
     } catch (err: any) {
@@ -91,20 +121,21 @@ const JobOpeningsPage = () => {
   // Format job data for display
   const formatJobForDisplay = (job: any) => {
     return {
-      id: job.postNumber || `REF-${job.id.slice(-6).toUpperCase()}`,
+      id: job.postNumber,
       title: job.title,
       description: job.description || `Position: ${job.title} at ${job.location}`,
       location: job.location,
       type: job.type,
       category: job.category,
       closingDate: job.closingDate,
+      jobVacancyId: job.id,
     };
   };
 
   // Pagination handlers
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
-      fetchJobs(pageNumber);
+      fetchJobs(pageNumber, searchTerm, employmentTypes);
     }
   };
 
@@ -118,6 +149,34 @@ const JobOpeningsPage = () => {
     if (pagination.currentPage < pagination.totalPages) {
       handlePageChange(pagination.currentPage + 1);
     }
+  };
+
+  // Search and filter handlers
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  const handleEmploymentTypeChange = (selectedTypes: string[]) => {
+    setEmploymentTypes(selectedTypes);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setEmploymentTypes([]);
+    dispatch(clearFilters());
+    fetchJobs(1, '', []);
+  };
+
+  // Handle search button click
+  const handleSearch = () => {
+    dispatch(
+      setFilters({
+        searchTerm: searchTerm,
+        employmentType: employmentTypes.join(', '),
+      })
+    );
+    dispatch(resetPagination());
+    fetchJobs(1, searchTerm, employmentTypes);
   };
 
   // Show loading state
@@ -164,10 +223,7 @@ const JobOpeningsPage = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Jobs</h3>
               <p className="text-gray-600 mb-6">{error}</p>
-              <Button 
-                className="bg-[#0086C9] hover:bg-[#0086C9]" 
-                onClick={() => window.location.reload()}
-              >
+              <Button className="bg-[#0086C9] hover:bg-[#0086C9]" onClick={() => window.location.reload()}>
                 Try Again
               </Button>
             </div>
@@ -193,7 +249,7 @@ const JobOpeningsPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Search Tags */}
-              <div>
+              {/* <div>
                 <label className="block text-sm mb-2">Search</label>
                 <div className="bg-white rounded-lg p-2 flex flex-wrap gap-2 items-center">
                   {searchTags.map((tag) => (
@@ -205,41 +261,49 @@ const JobOpeningsPage = () => {
                     </Badge>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
-              {/* Closing Date */}
+              {/* Employment Type Filter */}
               <div>
-                <label className="block text-sm mb-2">Closing Date</label>
-                <div className="bg-white rounded-lg p-2.5 text-gray-700 flex items-center justify-between">
-                  <span className="text-sm">Jan 6 - Jan 13</span>
-                  <ChevronLeft className="w-4 h-4 rotate-90" />
-                </div>
+                <label className="block text-sm mb-2">Employment Type</label>
+                <MultiSelect
+                  options={employmentTypeOptions}
+                  selected={employmentTypes}
+                  onChange={handleEmploymentTypeChange}
+                  placeholder="Select employment types..."
+                  className="h-12 text-black"
+                />
               </div>
 
               {/* Center */}
-              <div>
+              {/* <div>
                 <label className="block text-sm mb-2">Center</label>
                 <div className="bg-white rounded-lg p-2.5 text-gray-700 flex items-center justify-between">
                   <span className="text-sm">All Centres</span>
                   <ChevronLeft className="w-4 h-4 rotate-90" />
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Search Bar */}
             <div className="flex gap-2">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input type="text" placeholder="Search" className="pl-10 bg-white h-12" />
+                <Input
+                  type="text"
+                  placeholder="Search jobs by title, location, or post number..."
+                  className="pl-10 bg-white text-black h-12"
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                />
               </div>
-              {/* <Button variant="outline" className="bg-white text-gray-700 h-12 px-4">
-                <SlidersHorizontal className="w-5 h-5 mr-2" />
-                <span className="hidden sm:inline">More filters</span>
-              </Button> */}
-              <Button variant="outline" className="bg-white text-gray-700 h-12 px-6">
+              <Button variant="outline" className="bg-white text-gray-700 h-12 px-6" onClick={handleClearFilters}>
                 Clear
               </Button>
-              <Button className="bg-[#0086C9] h-12 px-8">Search</Button>
+              <Button className="bg-[#0086C9] h-12 px-8" onClick={handleSearch}>
+                Search
+              </Button>
             </div>
           </div>
         </div>
@@ -267,10 +331,10 @@ const JobOpeningsPage = () => {
               </div>
               <div className="flex">
                 <button className="p-2 border-2 border-[#D0D5DD] rounded-tl-[8px] rounded-bl-[8px]">
-                  <Grid className="w-5 h-5 text-[#344054]" />
+                  <TableOfContents className="w-5 h-5 text-[#344054]" />
                 </button>
                 <button className="p-2 border-t-2 border-b-2 border-r-2 border-[#D0D5DD] rounded-tr-[8px] rounded-br-[8px]">
-                  <Map className="w-5 h-5" />
+                  <LayoutGrid className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -288,10 +352,7 @@ const JobOpeningsPage = () => {
                       <p className="text-gray-600 mb-6">
                         There are currently no job openings available. Please check back later for new opportunities.
                       </p>
-                      <Button 
-                        className="bg-[#0086C9] hover:bg-[#0086C9]" 
-                        onClick={() => window.location.reload()}
-                      >
+                      <Button className="bg-[#0086C9] hover:bg-[#0086C9]" onClick={() => window.location.reload()}>
                         Refresh Page
                       </Button>
                     </div>
@@ -313,16 +374,16 @@ const JobOpeningsPage = () => {
                               {displayJob.location}
                             </div>
                             <div className="flex items-center gap-4 mt-2">
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                {displayJob.type}
-                              </span>
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{displayJob.type}</span>
                               <span className="text-xs text-gray-500">
                                 Closes: {new Date(displayJob.closingDate).toLocaleDateString('en-GB')}
                               </span>
                             </div>
                           </div>
                           <div className="flex flex-row gap-2">
-                            <Button className="bg-[#0086C9]">Apply</Button>
+                            <Button className="bg-[#0086C9]" onClick={() => navigate(`/jobs/${displayJob.jobVacancyId}`)}>
+                              Apply
+                            </Button>
                             <button onClick={() => toggleSaveJob(job.id)} className="p-2 border border-[#7CD4FD] rounded">
                               <Heart className={`w-5 h-5 ${savedJobs.includes(job.id) ? 'fill-red-500 text-red-500' : 'text-[#026AA2]'}`} />
                             </button>
@@ -337,14 +398,11 @@ const JobOpeningsPage = () => {
 
             {/* Pagination */}
             <div className="flex items-center justify-between border-t border-[#E4E7EC] mt-8 py-4">
-              <div className="text-sm text-gray-600">
-                Showing {jobs.length} of {pagination.totalRecords} jobs (Page {pagination.currentPage} of {pagination.totalPages})
-              </div>
               <Pagination className="mt-0">
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious 
-                      href="#" 
+                    <PaginationPrevious
+                      href="#"
                       onClick={(e) => {
                         e.preventDefault();
                         handlePreviousPage();
@@ -352,35 +410,35 @@ const JobOpeningsPage = () => {
                       className={pagination.currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                     />
                   </PaginationItem>
-                  
+
                   {/* Page Numbers */}
                   {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                     const pageNumber = i + 1;
                     const isActive = pageNumber === pagination.currentPage;
                     return (
                       <PaginationItem key={pageNumber}>
-                        <PaginationLink 
+                        <PaginationLink
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
                             handlePageChange(pageNumber);
                           }}
                           isActive={isActive}
-                          className="cursor-pointer"
+                          className="cursor-pointer border-none text-black bg-inherit shadow-none hover:bg-inherit"
                         >
                           {pageNumber}
                         </PaginationLink>
                       </PaginationItem>
                     );
                   })}
-                  
+
                   {pagination.totalPages > 5 && (
                     <>
                       <PaginationItem>
                         <PaginationEllipsis />
                       </PaginationItem>
                       <PaginationItem>
-                        <PaginationLink 
+                        <PaginationLink
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
@@ -393,10 +451,10 @@ const JobOpeningsPage = () => {
                       </PaginationItem>
                     </>
                   )}
-                  
+
                   <PaginationItem>
-                    <PaginationNext 
-                      href="#" 
+                    <PaginationNext
+                      href="#"
                       onClick={(e) => {
                         e.preventDefault();
                         handleNextPage();

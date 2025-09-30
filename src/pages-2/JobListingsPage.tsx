@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import MultiSelect from '@/components/ui/multi-select';
 import {
   ArrowDown,
   ArrowLeft,
@@ -14,9 +15,11 @@ import {
   GraduationCap,
   Briefcase,
   Search,
+  Filter,
+  X,
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFilteredJobs, setFilters, toggleFavorite, setJobsFromApi, setLoading, setError, setCurrentPage, selectPagination } from '@/slices/jobsSlice';
+import { selectFilteredJobs, setFilters, toggleFavorite, setJobsFromApi, setLoading, setError, setCurrentPage, selectPagination, clearFilters, resetPagination } from '@/slices/jobsSlice';
 import { useExecuteRequest1Mutation } from '@/slices/services';
 import HeaderV2 from './Header';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +48,18 @@ const TableCell = ({ children, className }: { children: React.ReactNode; classNa
 
 const JobListingsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
   const dispatch = useDispatch();
+
+  // Employment type options
+  const employmentTypeOptions = [
+    { value: 'Internship', label: 'Internship' },
+    { value: 'Learnership', label: 'Learnership' },
+    { value: 'Full Time', label: 'Full Time' },
+    { value: 'Part Time', label: 'Part Time' },
+    { value: 'Contract', label: 'Contract' },
+  ];
 
   // Mock navigate function
   const navigate = useNavigate();
@@ -61,10 +75,16 @@ const JobListingsPage: React.FC = () => {
   const hasAppliedSelector = useSelector((state: any) => state.jobs.applications);
 
   // Fetch jobs from API
-  const fetchJobs = async (pageNumber: number = 1) => {
+  const fetchJobs = async (pageNumber: number = 1, searchText: string = '', empTypes: string[] = []) => {
     try {
       dispatch(setLoading(true));
       dispatch(setError(null));
+      
+      // Build employment type filter
+      let employmentTypeFilter = 'Internship, Learnership';
+      if (empTypes.length > 0) {
+        employmentTypeFilter = empTypes.join(', ');
+      }
       
       const result = await getJobs({
         body: {
@@ -73,8 +93,8 @@ const JobListingsPage: React.FC = () => {
           InputParamters: {
             PageNumber: pageNumber,
             PageSize: 12,
-            SearchText: '',
-            EmploymentType: 'Internship, Learnership',
+            SearchText: searchText,
+            EmploymentType: employmentTypeFilter,
           },
         },
       }).unwrap();
@@ -153,7 +173,29 @@ const JobListingsPage: React.FC = () => {
   // Update search filters
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    dispatch(setFilters({ searchTerm: value }));
+  };
+
+  // Handle employment type filter
+  const handleEmploymentTypeChange = (selectedTypes: string[]) => {
+    setEmploymentTypes(selectedTypes);
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setEmploymentTypes([]);
+    dispatch(clearFilters());
+    fetchJobs(1, '', []);
+  };
+
+  // Handle search button click
+  const handleSearch = () => {
+    dispatch(setFilters({ 
+      searchTerm: searchTerm,
+      employmentType: employmentTypes.join(', ')
+    }));
+    dispatch(resetPagination());
+    fetchJobs(1, searchTerm, employmentTypes);
   };
 
   // Helper function to check if job has been applied to
@@ -164,7 +206,7 @@ const JobListingsPage: React.FC = () => {
   // Pagination handlers
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
-      fetchJobs(pageNumber);
+      fetchJobs(pageNumber, searchTerm, employmentTypes);
     }
   };
 
@@ -306,25 +348,66 @@ const JobListingsPage: React.FC = () => {
         </Card>
 
         {/* Search and Filter */}
-        <div className="flex flex-col md:flex-row justify-between gap-3 mb-6">
-          <div className="flex items-center gap-2">
-            {/* <Button variant="outline" className="bg-white border border-[#D0D5DD] hover:bg-gray-50">
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Filters
-            </Button> */}
-          </div>
-          <div className="relative w-full md:w-64">
-            <Input
-              type="search"
-              placeholder="Search jobs..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 pr-4 border border-[#D0D5DD] bg-white"
-            />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="text-gray-300" />
+        <div className="flex flex-col gap-4 mb-6">
+          {/* Search Bar */}
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Input
+                type="search"
+                placeholder="Search jobs by title, location, or post number..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                className="pl-10 pr-4 border border-[#D0D5DD] bg-white"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="text-gray-300" />
+              </div>
             </div>
+            <Button
+              onClick={handleSearch}
+              className="bg-[#0086C9] hover:bg-[#0070a3] text-white"
+            >
+              <Search className="mr-2 h-4 w-4" />
+              Search
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="bg-white border border-[#D0D5DD] hover:bg-gray-50"
+            >
+              <Filter className="mr-2 h-4 w-4" />
+              Filters
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              className="bg-white border border-[#D0D5DD] hover:bg-gray-50"
+            >
+              <X className="mr-2 h-4 w-4" />
+              Clear
+            </Button>
           </div>
+
+          {/* Filter Panel */}
+          {showFilters && (
+            <Card className="p-4 border border-[#D0D5DD] bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Employment Type
+                  </label>
+                  <MultiSelect
+                    options={employmentTypeOptions}
+                    selected={employmentTypes}
+                    onChange={handleEmploymentTypeChange}
+                    placeholder="Select employment types..."
+                    className="border border-[#D0D5DD] bg-white"
+                  />
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
 
         {/* Jobs Table */}
