@@ -542,7 +542,7 @@ const JobDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                {/* <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h4 className="font-semibold text-blue-800 mb-2">Important Information</h4>
                   <ul className="text-sm text-blue-700 space-y-1">
                     <li>• Please include the job reference number in your email subject</li>
@@ -550,7 +550,7 @@ const JobDetailPage: React.FC = () => {
                     <li>• For urgent matters, please call our helpline: 0800 123 456</li>
                     <li>• Keep your application reference number for tracking</li>
                   </ul>
-                </div>
+                </div> */}
               </div>
             </div>
           </section>

@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HeaderV2 from './Header';
 import { useNavigate } from 'react-router-dom';
 import { useExecuteRequest1Mutation, useExecuteRequest2Mutation } from '@/slices/services';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
+import { updateProfileDetails } from '@/slices/detailsSlice';
 
 // Master data types
 interface MasterDataOption {
@@ -249,6 +250,7 @@ const defaultContactInfo: ContactFormData = {
 const ProfilePage: React.FC = () => {
   // Get profile data from Redux store
   const profileData = useSelector((state: RootState) => state.profile.profileDetails);
+  const dispatch = useDispatch();
 
   // Active tab state - initialize with current profile step
   const getInitialTab = () => {
@@ -289,14 +291,12 @@ const ProfilePage: React.FC = () => {
       rightToWork: profileData.applicantDetails?.personalInfo?.rightToWorkStatusId?.toString() || defaultPersonalInfo.rightToWork,
       disabilityStatus: profileData.applicantDetails?.personalInfo?.disabilityStatusId?.toString() || defaultPersonalInfo.disabilityStatus,
       disabilityNature: defaultPersonalInfo.disabilityNature, // Not available in profile data
-      languages: profileData.applicantDetails?.languages?.language
-        ? [
-            {
-              id: '1',
-              language: profileData.applicantDetails.languages.language,
-              proficiency: profileData.applicantDetails.languages.proficiencyLevel || '',
-            },
-          ]
+      languages: profileData.applicantDetails?.languages && profileData.applicantDetails.languages.length > 0
+        ? profileData.applicantDetails.languages.map((lang, index) => ({
+            id: (index + 1).toString(),
+            language: lang.language || '',
+            proficiency: lang.proficiencyLevel || '',
+          }))
         : defaultPersonalInfo.languages,
       qualifications: profileData.applicantDetails?.qualifications?.qualificationName
         ? [
@@ -363,6 +363,358 @@ const ProfilePage: React.FC = () => {
       };
       reader.onerror = (error) => reject(error);
     });
+  };
+
+  // Helper function to update profile slice with current step data
+  const updateProfileSlice = (stepData: any) => {
+    const updatedProfileData = { ...profileData };
+
+    switch (activeTab) {
+      case 'personal':
+        // Update personal information in the slice
+        updatedProfileData.Name = stepData.FirstName || updatedProfileData.Name;
+        updatedProfileData.Surname = stepData.LastName || updatedProfileData.Surname;
+        updatedProfileData.IdNumber = stepData.IdNumber || updatedProfileData.IdNumber;
+        updatedProfileData.Email = stepData.Email || updatedProfileData.Email;
+        
+        // Create new applicantDetails object with immutable updates
+        const currentApplicantDetails = updatedProfileData.applicantDetails || {
+          personalInfo: {
+            firstName: null,
+            lastName: null,
+            initial: null,
+            idNumber: null,
+            age: null,
+            dateOfBirth: null,
+            passportNumber: null,
+            genderId: 0,
+            titleId: 0,
+            raceId: 0,
+            rightToWorkStatusId: 0,
+            disabilityStatusId: 0,
+          },
+          contactInfo: {
+            email: null,
+            mobile: null,
+            alternativeNumber: null,
+            streetAddress: null,
+            city: null,
+            provinceId: 0,
+            postalCode: null,
+            country: null,
+          },
+          qualifications: {
+            qualificationName: null,
+            institution: null,
+            yearObtained: 0,
+          },
+          workExperience: {
+            companyName: null,
+            position: null,
+            fromDate: null,
+            toDate: null,
+            reasonForLeaving: null,
+          },
+          documents: {
+            cv: null,
+            idDocument: null,
+            qualificationsDoc: null,
+          },
+            languages: [],
+        };
+
+        // Create new personalInfo object with immutable updates
+        const updatedPersonalInfo = {
+          ...currentApplicantDetails.personalInfo,
+          firstName: stepData.FirstName || currentApplicantDetails.personalInfo.firstName,
+          lastName: stepData.LastName || currentApplicantDetails.personalInfo.lastName,
+          initial: stepData.Initial || currentApplicantDetails.personalInfo.initial,
+          idNumber: stepData.IdNumber || currentApplicantDetails.personalInfo.idNumber,
+          age: stepData.Age ? parseInt(stepData.Age) : currentApplicantDetails.personalInfo.age,
+          dateOfBirth: stepData.DateOfBirth || currentApplicantDetails.personalInfo.dateOfBirth,
+          passportNumber: stepData.PassportNumber || currentApplicantDetails.personalInfo.passportNumber,
+          genderId: stepData.GenderId ? parseInt(stepData.GenderId) : currentApplicantDetails.personalInfo.genderId,
+          titleId: stepData.TitleId ? parseInt(stepData.TitleId) : currentApplicantDetails.personalInfo.titleId,
+          raceId: stepData.RaceId ? parseInt(stepData.RaceId) : currentApplicantDetails.personalInfo.raceId,
+          rightToWorkStatusId: stepData.RightToWorkStatusId ? parseInt(stepData.RightToWorkStatusId) : currentApplicantDetails.personalInfo.rightToWorkStatusId,
+          disabilityStatusId: stepData.DisabilityStatusId ? parseInt(stepData.DisabilityStatusId) : currentApplicantDetails.personalInfo.disabilityStatusId,
+        };
+
+        // Create new applicantDetails object with updated personalInfo
+        updatedProfileData.applicantDetails = {
+          ...currentApplicantDetails,
+          personalInfo: updatedPersonalInfo,
+        };
+        break;
+
+      case 'contact':
+        // Update contact information in the slice
+        updatedProfileData.Mobile = stepData.Mobile || updatedProfileData.Mobile;
+        
+        // Create new applicantDetails object with immutable updates
+        const currentContactApplicantDetails = updatedProfileData.applicantDetails || {
+          personalInfo: {
+            firstName: null,
+            lastName: null,
+            initial: null,
+            idNumber: null,
+            age: null,
+            dateOfBirth: null,
+            passportNumber: null,
+            genderId: 0,
+            titleId: 0,
+            raceId: 0,
+            rightToWorkStatusId: 0,
+            disabilityStatusId: 0,
+          },
+          contactInfo: {
+            email: null,
+            mobile: null,
+            alternativeNumber: null,
+            streetAddress: null,
+            city: null,
+            provinceId: 0,
+            postalCode: null,
+            country: null,
+          },
+          qualifications: {
+            qualificationName: null,
+            institution: null,
+            yearObtained: 0,
+          },
+          workExperience: {
+            companyName: null,
+            position: null,
+            fromDate: null,
+            toDate: null,
+            reasonForLeaving: null,
+          },
+          documents: {
+            cv: null,
+            idDocument: null,
+            qualificationsDoc: null,
+          },
+            languages: [],
+        };
+
+        // Create new contactInfo object with immutable updates
+        const updatedContactInfo = {
+          ...currentContactApplicantDetails.contactInfo,
+          email: stepData.Email || currentContactApplicantDetails.contactInfo.email,
+          mobile: stepData.Mobile || currentContactApplicantDetails.contactInfo.mobile,
+          alternativeNumber: stepData.AlternativeNumber || currentContactApplicantDetails.contactInfo.alternativeNumber,
+          streetAddress: stepData.StreetAddress || currentContactApplicantDetails.contactInfo.streetAddress,
+          city: stepData.City || currentContactApplicantDetails.contactInfo.city,
+          provinceId: stepData.ProvinceId ? parseInt(stepData.ProvinceId) : currentContactApplicantDetails.contactInfo.provinceId,
+          postalCode: stepData.PostalCode || currentContactApplicantDetails.contactInfo.postalCode,
+          country: stepData.Country || currentContactApplicantDetails.contactInfo.country,
+        };
+
+        // Create new applicantDetails object with updated contactInfo
+        updatedProfileData.applicantDetails = {
+          ...currentContactApplicantDetails,
+          contactInfo: updatedContactInfo,
+        };
+        break;
+
+      case 'qualifications':
+        // Create new applicantDetails object with immutable updates
+        const currentQualApplicantDetails = updatedProfileData.applicantDetails || {
+          personalInfo: {
+            firstName: null,
+            lastName: null,
+            initial: null,
+            idNumber: null,
+            age: null,
+            dateOfBirth: null,
+            passportNumber: null,
+            genderId: 0,
+            titleId: 0,
+            raceId: 0,
+            rightToWorkStatusId: 0,
+            disabilityStatusId: 0,
+          },
+          contactInfo: {
+            email: null,
+            mobile: null,
+            alternativeNumber: null,
+            streetAddress: null,
+            city: null,
+            provinceId: 0,
+            postalCode: null,
+            country: null,
+          },
+          qualifications: {
+            qualificationName: null,
+            institution: null,
+            yearObtained: 0,
+          },
+          workExperience: {
+            companyName: null,
+            position: null,
+            fromDate: null,
+            toDate: null,
+            reasonForLeaving: null,
+          },
+          documents: {
+            cv: null,
+            idDocument: null,
+            qualificationsDoc: null,
+          },
+            languages: [],
+        };
+
+        // Create new qualifications object with immutable updates
+        const updatedQualifications = {
+          ...currentQualApplicantDetails.qualifications,
+          qualificationName: stepData.QualificationName || currentQualApplicantDetails.qualifications.qualificationName,
+          institution: stepData.Institution || currentQualApplicantDetails.qualifications.institution,
+          yearObtained: stepData.YearObtained ? parseInt(stepData.YearObtained) : currentQualApplicantDetails.qualifications.yearObtained,
+        };
+
+        // Create new applicantDetails object with updated qualifications
+        updatedProfileData.applicantDetails = {
+          ...currentQualApplicantDetails,
+          qualifications: updatedQualifications,
+        };
+        break;
+
+      case 'work-experience':
+        // Create new applicantDetails object with immutable updates
+        const currentWorkApplicantDetails = updatedProfileData.applicantDetails || {
+          personalInfo: {
+            firstName: null,
+            lastName: null,
+            initial: null,
+            idNumber: null,
+            age: null,
+            dateOfBirth: null,
+            passportNumber: null,
+            genderId: 0,
+            titleId: 0,
+            raceId: 0,
+            rightToWorkStatusId: 0,
+            disabilityStatusId: 0,
+          },
+          contactInfo: {
+            email: null,
+            mobile: null,
+            alternativeNumber: null,
+            streetAddress: null,
+            city: null,
+            provinceId: 0,
+            postalCode: null,
+            country: null,
+          },
+          qualifications: {
+            qualificationName: null,
+            institution: null,
+            yearObtained: 0,
+          },
+          workExperience: {
+            companyName: null,
+            position: null,
+            fromDate: null,
+            toDate: null,
+            reasonForLeaving: null,
+          },
+          documents: {
+            cv: null,
+            idDocument: null,
+            qualificationsDoc: null,
+          },
+            languages: [],
+        };
+
+        // Create new workExperience object with immutable updates
+        const updatedWorkExperience = {
+          ...currentWorkApplicantDetails.workExperience,
+          companyName: stepData.CompanyName || currentWorkApplicantDetails.workExperience.companyName,
+          position: stepData.Position || currentWorkApplicantDetails.workExperience.position,
+          fromDate: stepData.FromDate || currentWorkApplicantDetails.workExperience.fromDate,
+          toDate: stepData.ToDate || currentWorkApplicantDetails.workExperience.toDate,
+          reasonForLeaving: stepData.ReasonForLeaving || currentWorkApplicantDetails.workExperience.reasonForLeaving,
+        };
+
+        // Create new applicantDetails object with updated workExperience
+        updatedProfileData.applicantDetails = {
+          ...currentWorkApplicantDetails,
+          workExperience: updatedWorkExperience,
+        };
+        break;
+
+      case 'cv':
+        // Create new applicantDetails object with immutable updates
+        const currentCvApplicantDetails = updatedProfileData.applicantDetails || {
+          personalInfo: {
+            firstName: null,
+            lastName: null,
+            initial: null,
+            idNumber: null,
+            age: null,
+            dateOfBirth: null,
+            passportNumber: null,
+            genderId: 0,
+            titleId: 0,
+            raceId: 0,
+            rightToWorkStatusId: 0,
+            disabilityStatusId: 0,
+          },
+          contactInfo: {
+            email: null,
+            mobile: null,
+            alternativeNumber: null,
+            streetAddress: null,
+            city: null,
+            provinceId: 0,
+            postalCode: null,
+            country: null,
+          },
+          qualifications: {
+            qualificationName: null,
+            institution: null,
+            yearObtained: 0,
+          },
+          workExperience: {
+            companyName: null,
+            position: null,
+            fromDate: null,
+            toDate: null,
+            reasonForLeaving: null,
+          },
+          documents: {
+            cv: null,
+            idDocument: null,
+            qualificationsDoc: null,
+          },
+            languages: [],
+        };
+
+        // Create new languages array with immutable updates
+        // Convert form languages array to store format
+        const formLanguages = personalFormData.languages || [];
+        const updatedLanguages = formLanguages.map(lang => ({
+          language: lang.language,
+          proficiencyLevel: lang.proficiency,
+        }));
+
+        // Create new documents object with immutable updates
+        const updatedDocuments = {
+          ...currentCvApplicantDetails.documents,
+          ...(stepData.CVFileName && { cv: stepData.CVFileName }),
+        };
+
+        // Create new applicantDetails object with updated languages and documents
+        updatedProfileData.applicantDetails = {
+          ...currentCvApplicantDetails,
+          languages: updatedLanguages,
+          documents: updatedDocuments,
+        };
+        break;
+    }
+
+    // Dispatch the updated profile data to Redux store
+    dispatch(updateProfileDetails(updatedProfileData));
   };
 
   // Helper function to get current step data only
@@ -505,6 +857,9 @@ const ProfilePage: React.FC = () => {
 
       const response = await updateProfile(updatePayload).unwrap();
       console.log(`Profile updated successfully for ${activeTab} step:`, response);
+
+      // Update the Redux store with the new data
+      updateProfileSlice(currentStepData);
 
       // Show success message or handle success
       alert(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} step updated successfully!`);

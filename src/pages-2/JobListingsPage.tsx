@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,8 @@ import {
   Search,
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFilteredJobs, selectHasApplied, setFilters, toggleFavorite } from '@/slices/jobsSlice';
+import { selectFilteredJobs, setFilters, toggleFavorite, setJobsFromApi, setLoading, setError, setCurrentPage, selectPagination } from '@/slices/jobsSlice';
+import { useExecuteRequest1Mutation } from '@/slices/services';
 import HeaderV2 from './Header';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
@@ -49,8 +50,58 @@ const JobListingsPage: React.FC = () => {
   // Mock navigate function
   const navigate = useNavigate();
 
+  // API integration
+  const [getJobs] = useExecuteRequest1Mutation();
+
   // Get filtered jobs from Redux store
   const jobs = useSelector(selectFilteredJobs);
+  const isLoading = useSelector((state: any) => state.jobs.isLoading);
+  const error = useSelector((state: any) => state.jobs.error);
+  const pagination = useSelector(selectPagination);
+  const hasAppliedSelector = useSelector((state: any) => state.jobs.applications);
+
+  // Fetch jobs from API
+  const fetchJobs = async (pageNumber: number = 1) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      
+      const result = await getJobs({
+        body: {
+          RequestName: 'JobVacancyListing',
+          EntityName: 'JobVacancy',
+          InputParamters: {
+            PageNumber: pageNumber,
+            PageSize: 12,
+            SearchText: '',
+            EmploymentType: 'Internship, Learnership',
+          },
+        },
+      }).unwrap();
+
+      if (result?.Listing) {
+        dispatch(setJobsFromApi({
+          jobs: result.Listing,
+          pagination: {
+            pageSize: result.PageSize,
+            recordCount: result.RecordCount,
+            pages: result.Pages,
+          }
+        }));
+        dispatch(setCurrentPage(pageNumber));
+      }
+    } catch (err: any) {
+      console.error('Error fetching jobs:', err);
+      dispatch(setError(err?.data?.clientMessage || 'Failed to fetch jobs'));
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  // Fetch jobs on component mount
+  useEffect(() => {
+    fetchJobs(1);
+  }, [dispatch, getJobs]);
 
   // Filter jobs based on local search term (in addition to Redux filters)
   const filteredJobs = jobs.filter(
@@ -104,6 +155,98 @@ const JobListingsPage: React.FC = () => {
     setSearchTerm(value);
     dispatch(setFilters({ searchTerm: value }));
   };
+
+  // Helper function to check if job has been applied to
+  const hasApplied = (jobId: string) => {
+    return hasAppliedSelector.some((app: any) => app.jobId === jobId);
+  };
+
+  // Pagination handlers
+  const handlePageChange = (pageNumber: number) => {
+    if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
+      fetchJobs(pageNumber);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (pagination.currentPage > 1) {
+      handlePageChange(pagination.currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination.currentPage < pagination.totalPages) {
+      handlePageChange(pagination.currentPage + 1);
+    }
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <HeaderV2 />
+        <div className="container mx-auto mb-auto px-4 py-8">
+          <Card
+            className="w-full min-h-[180px] mb-10 text-white border-none"
+            style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
+          >
+            <CardHeader>
+              <CardTitle className="text-4xl font-bold mb-8">Job Openings</CardTitle>
+              <p className="text-gray-300 font-normal text-xl mt-2">Loading available positions...</p>
+            </CardHeader>
+          </Card>
+          <Card className="border border-[#D0D5DD] bg-white text-center py-12">
+            <CardContent>
+              <div className="max-w-md mx-auto">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#005f33] mx-auto mb-4"></div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Jobs</h3>
+                <p className="text-gray-600">Please wait while we fetch the latest job openings...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <HeaderV2 />
+        <div className="container mx-auto mb-auto px-4 py-8">
+          <Card
+            className="w-full min-h-[180px] mb-10 text-white border-none"
+            style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
+          >
+            <CardHeader>
+              <CardTitle className="text-4xl font-bold mb-8">Job Openings</CardTitle>
+              <p className="text-gray-300 font-normal text-xl mt-2">Error loading positions</p>
+            </CardHeader>
+          </Card>
+          <Card className="border border-[#D0D5DD] bg-white text-center py-12">
+            <CardContent>
+              <div className="max-w-md mx-auto">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-red-600 text-2xl">⚠️</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Jobs</h3>
+                <p className="text-gray-600 mb-6">{error}</p>
+                <Button 
+                  className="bg-[#0086C9] hover:bg-[#0086C9]" 
+                  onClick={() => window.location.reload()}
+                >
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (jobs.length === 0) {
     return (
@@ -214,7 +357,7 @@ const JobListingsPage: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredJobs.map((job, index) => {
-                  const hasApplied = useSelector((state: any) => selectHasApplied(state, job.id));
+                  const jobHasApplied = hasApplied(job.id);
                   const JobTypeIcon = getJobTypeIcon(job.category);
 
                   return (
@@ -251,7 +394,7 @@ const JobListingsPage: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {hasApplied ? (
+                        {jobHasApplied ? (
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Applied</span>
                         ) : (
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Open</span>
@@ -260,7 +403,7 @@ const JobListingsPage: React.FC = () => {
                       <TableCell className="text-center bg-gray-50">
                         <div className="flex items-center justify-center gap-2">
                           {/* Primary Action Button - Apply or View Application */}
-                          {!hasApplied ? (
+                          {!jobHasApplied ? (
                             <Button
                               onClick={() => handleApplyJob(job.id)}
                               className="bg-[#005f33] hover:bg-[#004d2a] text-white text-sm font-semibold px-5 py-2 h-9 shadow-sm hover:shadow-md transition-all duration-200"
@@ -313,14 +456,63 @@ const JobListingsPage: React.FC = () => {
             {/* Pagination */}
             <div className="flex items-center justify-between p-4 border-t border-gray-300">
               <div className="text-sm text-gray-600">
-                Showing {filteredJobs.length} of {jobs.length} jobs
+                Showing {jobs.length} of {pagination.totalRecords} jobs (Page {pagination.currentPage} of {pagination.totalPages})
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="gap-1 border text-sm font-semibold bg-white border-[#EAECF0]" disabled>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-1 border text-sm font-semibold bg-white border-[#EAECF0]" 
+                  disabled={pagination.currentPage <= 1}
+                  onClick={handlePreviousPage}
+                >
                   <ArrowLeft className="h-4 w-4" />
                   Previous
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1 border text-sm font-semibold bg-white border-[#EAECF0]" disabled>
+                
+                {/* Page Numbers */}
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const pageNumber = i + 1;
+                    const isActive = pageNumber === pagination.currentPage;
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={isActive ? "default" : "outline"}
+                        size="sm"
+                        className={`w-8 h-8 p-0 text-sm font-semibold ${
+                          isActive 
+                            ? 'bg-[#005f33] text-white' 
+                            : 'bg-white border-[#EAECF0] text-gray-700 hover:bg-gray-50'
+                        }`}
+                        onClick={() => handlePageChange(pageNumber)}
+                      >
+                        {pageNumber}
+                      </Button>
+                    );
+                  })}
+                  {pagination.totalPages > 5 && (
+                    <>
+                      <span className="px-2 py-1 text-gray-500">...</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-8 h-8 p-0 text-sm font-semibold bg-white border-[#EAECF0] text-gray-700 hover:bg-gray-50"
+                        onClick={() => handlePageChange(pagination.totalPages)}
+                      >
+                        {pagination.totalPages}
+                      </Button>
+                    </>
+                  )}
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-1 border text-sm font-semibold bg-white border-[#EAECF0]" 
+                  disabled={pagination.currentPage >= pagination.totalPages}
+                  onClick={handleNextPage}
+                >
                   Next
                   <ArrowRight className="h-4 w-4" />
                 </Button>

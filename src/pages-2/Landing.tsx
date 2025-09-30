@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Search, MapPin, Heart, Menu, ChevronLeft, ChevronRight, Grid, Map, SlidersHorizontal, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Search, MapPin, Heart, ChevronLeft, Grid, Map, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,74 +14,169 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import FooterV2 from './Footer';
 import HeaderV2 from './Header';
 import Footer from '@/components/Footer';
 import { useExecuteRequest1Mutation } from '@/slices/services';
+import { useSelector, useDispatch } from 'react-redux';
+import { setJobsFromApi, setLoading, setError, setCurrentPage, selectPagination } from '@/slices/jobsSlice';
 
 const JobOpeningsPage = () => {
-  const [searchTags, setSearchTags] = useState(['Learnership', 'Graduate']);
-  const [savedJobs, setSavedJobs] = useState([]);
+  const [searchTags, setSearchTags] = useState<string[]>(['Learnership', 'Graduate']);
+  const [savedJobs, setSavedJobs] = useState<string[]>([]);
+  const dispatch = useDispatch();
 
-  const [getJobs, getJobsProps] = useExecuteRequest1Mutation();
+  const [getJobs] = useExecuteRequest1Mutation();
 
-  console.log('jobs', getJobsProps?.data);
+  // Get jobs from Redux store
+  const jobs = useSelector((state: any) => state.jobs.jobs);
+  const isLoading = useSelector((state: any) => state.jobs.isLoading);
+  const error = useSelector((state: any) => state.jobs.error);
+  const pagination = useSelector(selectPagination);
 
-  useEffect(() => {
-    getJobs({
-      body: {
-        RequestName: 'JobVacancyListing',
-        EntityName: 'JobVacancy',
-        InputParamters: {
-          PageNumber: 1,
-          PageSize: 12,
-          SearchText: '',
-          EmploymentType: 'Internship, Learnership',
+  // Fetch jobs from API
+  const fetchJobs = async (pageNumber: number = 1) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      
+      const result = await getJobs({
+        body: {
+          RequestName: 'JobVacancyListing',
+          EntityName: 'JobVacancy',
+          InputParamters: {
+            PageNumber: pageNumber,
+            PageSize: 12,
+            SearchText: '',
+            EmploymentType: 'Internship, Learnership',
+          },
         },
-      },
-    });
-  }, []);
+      }).unwrap();
 
-  const jobs = [
-    {
-      id: 'POST-ITL-034',
-      title: 'Information Technology Learnership',
-      description: 'Supervise security operations and personnel at correctional facilities.',
-      location: 'Bloemfontein, South Africa',
-    },
-    {
-      id: 'POST-ITL-012',
-      title: 'Correctional Services Learnership',
-      description: 'Responsible for identifying, assessing, and mitigating operational risks within correctional facilities',
-      location: 'Pretoria, South Africa',
-    },
-    {
-      id: 'POST-ITL-012',
-      title: 'Correctional Officer',
-      description:
-        'An 18-month learnership program focused on correctional services operations, rehabilitation programs, and offender management.',
-      location: 'Johannesburg',
-    },
-    {
-      id: 'POST-ITL-010',
-      title: 'Social Worker',
-      description:
-        'A comprehensive 12-month IT learnership program designed to equip learners with essential IT skills within the correctional services environment.',
-      location: 'Pretoria, SouthAfrica',
-    },
-  ];
+      if (result?.Listing) {
+        dispatch(setJobsFromApi({
+          jobs: result.Listing,
+          pagination: {
+            pageSize: result.PageSize,
+            recordCount: result.RecordCount,
+            pages: result.Pages,
+          }
+        }));
+        dispatch(setCurrentPage(pageNumber));
+      }
+    } catch (err: any) {
+      console.error('Error fetching jobs:', err);
+      dispatch(setError(err?.data?.clientMessage || 'Failed to fetch jobs'));
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
 
-  const removeTag = (tag) => {
+  // Fetch jobs on component mount
+  useEffect(() => {
+    fetchJobs(1);
+  }, [dispatch, getJobs]);
+
+  const removeTag = (tag: string) => {
     setSearchTags(searchTags.filter((t) => t !== tag));
   };
 
-  const toggleSaveJob = (jobId) => {
+  const toggleSaveJob = (jobId: string) => {
     if (savedJobs.includes(jobId)) {
       setSavedJobs(savedJobs.filter((id) => id !== jobId));
     } else {
       setSavedJobs([...savedJobs, jobId]);
     }
   };
+
+  // Format job data for display
+  const formatJobForDisplay = (job: any) => {
+    return {
+      id: job.postNumber || `REF-${job.id.slice(-6).toUpperCase()}`,
+      title: job.title,
+      description: job.description || `Position: ${job.title} at ${job.location}`,
+      location: job.location,
+      type: job.type,
+      category: job.category,
+      closingDate: job.closingDate,
+    };
+  };
+
+  // Pagination handlers
+  const handlePageChange = (pageNumber: number) => {
+    if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
+      fetchJobs(pageNumber);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (pagination.currentPage > 1) {
+      handlePageChange(pagination.currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination.currentPage < pagination.totalPages) {
+      handlePageChange(pagination.currentPage + 1);
+    }
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <HeaderV2 />
+        <div className="bg-gradient-to-r from-[#182230] to-[#475467] text-white py-8 container mx-auto rounded-2xl my-6 md:py-12">
+          <div className="container mx-auto px-4">
+            <h1 className="text-3xl md:text-4xl text-[#FCFCFD] font-bold mb-2">Job Openings</h1>
+            <p className="text-[#FCFCFD] text-lg mb-6">Loading available positions...</p>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#0086C9] mx-auto mb-4"></div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Jobs</h3>
+              <p className="text-gray-600">Please wait while we fetch the latest job openings...</p>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <HeaderV2 />
+        <div className="bg-gradient-to-r from-[#182230] to-[#475467] text-white py-8 container mx-auto rounded-2xl my-6 md:py-12">
+          <div className="container mx-auto px-4">
+            <h1 className="text-3xl md:text-4xl text-[#FCFCFD] font-bold mb-2">Job Openings</h1>
+            <p className="text-[#FCFCFD] text-lg mb-6">Error loading positions</p>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-red-600 text-2xl">⚠️</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Jobs</h3>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <Button 
+                className="bg-[#0086C9] hover:bg-[#0086C9]" 
+                onClick={() => window.location.reload()}
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,52 +277,132 @@ const JobOpeningsPage = () => {
 
             {/* Job Cards */}
             <div className="space-y-2">
-              {jobs.map((job) => (
-                <Card key={job.id} className=" bg-white border border-[#E4E7EC]">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="text-sm text-[#026AA2] font-bold mb-1">{job.id}</div>
-                        <h3 className="text-lg font-semibold text-[#101828] mb-2">{job.title}</h3>
-                        <p className="text-[#475467] text-base mb-4">{job.description}</p>
-                        <div className="flex items-center text-gray-500 text-sm">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {job.location}
-                        </div>
+              {jobs.length === 0 ? (
+                <Card className="bg-white border border-[#E4E7EC]">
+                  <CardContent className="p-12 text-center">
+                    <div className="max-w-md mx-auto">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-gray-400 text-2xl">📋</span>
                       </div>
-                      <div className="flex flex-row gap-2">
-                        <Button className="bg-[#0086C9]">Apply</Button>
-                        <button onClick={() => toggleSaveJob(job.id)} className="p-2 border border-[#7CD4FD] rounded">
-                          <Heart className={`w-5 h-5 ${savedJobs.includes(job.id) ? 'fill-red-500 text-red-500' : 'text-[#026AA2]'}`} />
-                        </button>
-                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Jobs Available</h3>
+                      <p className="text-gray-600 mb-6">
+                        There are currently no job openings available. Please check back later for new opportunities.
+                      </p>
+                      <Button 
+                        className="bg-[#0086C9] hover:bg-[#0086C9]" 
+                        onClick={() => window.location.reload()}
+                      >
+                        Refresh Page
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ) : (
+                jobs.map((job: any) => {
+                  const displayJob = formatJobForDisplay(job);
+                  return (
+                    <Card key={job.id} className="bg-white border border-[#E4E7EC]">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="text-sm text-[#026AA2] font-bold mb-1">{displayJob.id}</div>
+                            <h3 className="text-lg font-semibold text-[#101828] mb-2">{displayJob.title}</h3>
+                            <p className="text-[#475467] text-base mb-4">{displayJob.description}</p>
+                            <div className="flex items-center text-gray-500 text-sm">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {displayJob.location}
+                            </div>
+                            <div className="flex items-center gap-4 mt-2">
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                {displayJob.type}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Closes: {new Date(displayJob.closingDate).toLocaleDateString('en-GB')}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex flex-row gap-2">
+                            <Button className="bg-[#0086C9]">Apply</Button>
+                            <button onClick={() => toggleSaveJob(job.id)} className="p-2 border border-[#7CD4FD] rounded">
+                              <Heart className={`w-5 h-5 ${savedJobs.includes(job.id) ? 'fill-red-500 text-red-500' : 'text-[#026AA2]'}`} />
+                            </button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center border-t border-[#E4E7EC] justify-stretch mt-8">
-              <Pagination className="mt-6">
+            <div className="flex items-center justify-between border-t border-[#E4E7EC] mt-8 py-4">
+              <div className="text-sm text-gray-600">
+                Showing {jobs.length} of {pagination.totalRecords} jobs (Page {pagination.currentPage} of {pagination.totalPages})
+              </div>
+              <Pagination className="mt-0">
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious href="#" />
+                    <PaginationPrevious 
+                      href="#" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePreviousPage();
+                      }}
+                      className={pagination.currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
                   </PaginationItem>
+                  
+                  {/* Page Numbers */}
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const pageNumber = i + 1;
+                    const isActive = pageNumber === pagination.currentPage;
+                    return (
+                      <PaginationItem key={pageNumber}>
+                        <PaginationLink 
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(pageNumber);
+                          }}
+                          isActive={isActive}
+                          className="cursor-pointer"
+                        >
+                          {pageNumber}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  
+                  {pagination.totalPages > 5 && (
+                    <>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink 
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(pagination.totalPages);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          {pagination.totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </>
+                  )}
+                  
                   <PaginationItem>
-                    <PaginationLink href="#">1</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink href="#">2</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink href="#">3</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext href="#" />
+                    <PaginationNext 
+                      href="#" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleNextPage();
+                      }}
+                      className={pagination.currentPage >= pagination.totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>

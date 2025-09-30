@@ -62,10 +62,10 @@ const initialState = {
         idDocument: null as string | null,
         qualificationsDoc: null as string | null,
       },
-      languages: {
-        language: null as string | null,
-        proficiencyLevel: null as string | null,
-      },
+      languages: [] as Array<{
+        language: string | null;
+        proficiencyLevel: string | null;
+      }>,
     },
   },
 };

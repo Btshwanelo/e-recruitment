@@ -24,6 +24,62 @@ export interface Job {
   isFavorite: boolean;
 }
 
+// API response interfaces
+export interface ApiJobResponse {
+  PageSize: number;
+  RecordCount: number;
+  Pages: number;
+  Listing: ApiJob[];
+  clientMessage: string | null;
+  results: any;
+  gotoUrl: string | null;
+}
+
+export interface ApiJob {
+  jobVacancyId: string;
+  name: string;
+  postNumber: string | null;
+  location: string;
+  employmentType: 'Internship' | 'Learnership' | 'Full Time' | 'Part Time' | 'Contract';
+  closesOn: string;
+  status: 'Draft' | 'Published' | 'Closed';
+}
+
+// Helper function to transform API job data to Job interface
+export const transformApiJobToJob = (apiJob: ApiJob): Job => {
+  const employmentTypeToCategory = (type: string): 'Permanent' | 'Temporary' | 'Contract' | 'Learnership' => {
+    switch (type) {
+      case 'Learnership':
+        return 'Learnership';
+      case 'Contract':
+        return 'Contract';
+      case 'Internship':
+        return 'Temporary';
+      default:
+        return 'Permanent';
+    }
+  };
+
+  return {
+    id: apiJob.jobVacancyId,
+    title: apiJob.name,
+    company: 'Department of Correctional Services', // Default company
+    location: apiJob.location,
+    type: apiJob.employmentType,
+    category: employmentTypeToCategory(apiJob.employmentType),
+    closingDate: apiJob.closesOn,
+    postedDate: new Date().toISOString().split('T')[0], // Current date as posted date
+    description: `Position: ${apiJob.name} at ${apiJob.location}`,
+    requirements: ['Grade 12 certificate', 'South African citizenship', 'No criminal record'],
+    responsibilities: ['Perform duties as assigned', 'Follow departmental policies', 'Maintain professional standards'],
+    skills: ['Communication', 'Teamwork', 'Problem solving'],
+    reference: apiJob.postNumber || `REF-${apiJob.jobVacancyId.slice(-6).toUpperCase()}`,
+    postNumber: apiJob.postNumber || undefined,
+    applicationRef: `APP-${apiJob.jobVacancyId.slice(-8).toUpperCase()}`,
+    isFavorite: false,
+  };
+};
+
 export interface JobApplication {
   id: string;
   jobId: string;
@@ -51,6 +107,12 @@ interface JobsState {
     type: string;
     category: string;
     searchTerm: string;
+  };
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalRecords: number;
+    totalPages: number;
   };
 }
 
@@ -468,6 +530,12 @@ const initialState: JobsState = {
     category: '',
     searchTerm: '',
   },
+  pagination: {
+    currentPage: 1,
+    pageSize: 12,
+    totalRecords: 0,
+    totalPages: 0,
+  },
 };
 
 const jobsSlice = createSlice({
@@ -477,6 +545,12 @@ const jobsSlice = createSlice({
     // Job management
     setJobs: (state, action: PayloadAction<Job[]>) => {
       state.jobs = action.payload;
+    },
+    setJobsFromApi: (state, action: PayloadAction<{ jobs: ApiJob[]; pagination: { pageSize: number; recordCount: number; pages: number } }>) => {
+      state.jobs = action.payload.jobs.map(transformApiJobToJob);
+      state.pagination.totalRecords = action.payload.pagination.recordCount;
+      state.pagination.totalPages = action.payload.pagination.pages;
+      state.pagination.pageSize = action.payload.pagination.pageSize;
     },
     addJob: (state, action: PayloadAction<Job>) => {
       state.jobs.push(action.payload);
@@ -572,6 +646,17 @@ const jobsSlice = createSlice({
       state.error = action.payload;
     },
 
+    // Pagination
+    setCurrentPage: (state, action: PayloadAction<number>) => {
+      state.pagination.currentPage = action.payload;
+    },
+    setPageSize: (state, action: PayloadAction<number>) => {
+      state.pagination.pageSize = action.payload;
+    },
+    setPagination: (state, action: PayloadAction<{ currentPage: number; pageSize: number; totalRecords: number; totalPages: number }>) => {
+      state.pagination = action.payload;
+    },
+
     // Clear all data
     clearJobs: () => initialState,
   },
@@ -585,6 +670,10 @@ export const selectJobById = (state: { jobs: JobsState }, jobId: string) => stat
 export const selectHasApplied = (state: { jobs: JobsState }, jobId: string) => state.jobs.applications.some((app) => app.jobId === jobId);
 export const selectApplicationByJobId = (state: { jobs: JobsState }, jobId: string) =>
   state.jobs.applications.find((app) => app.jobId === jobId);
+export const selectPagination = (state: { jobs: JobsState }) => state.jobs.pagination;
+export const selectCurrentPage = (state: { jobs: JobsState }) => state.jobs.pagination.currentPage;
+export const selectTotalPages = (state: { jobs: JobsState }) => state.jobs.pagination.totalPages;
+export const selectTotalRecords = (state: { jobs: JobsState }) => state.jobs.pagination.totalRecords;
 export const selectFilteredJobs = (state: { jobs: JobsState }) => {
   const { jobs, filters } = state.jobs;
 
@@ -604,6 +693,7 @@ export const selectFilteredJobs = (state: { jobs: JobsState }) => {
 // Export actions
 export const {
   setJobs,
+  setJobsFromApi,
   addJob,
   updateJob,
   deleteJob,
@@ -617,6 +707,9 @@ export const {
   clearFilters,
   setLoading,
   setError,
+  setCurrentPage,
+  setPageSize,
+  setPagination,
   clearJobs,
 } = jobsSlice.actions;
 
