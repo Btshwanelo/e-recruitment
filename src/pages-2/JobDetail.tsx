@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Briefcase, Building, MapPin, CheckCircle, GraduationCap, Heart } from 'lucide-react';
+import { Calendar, Briefcase, Building, MapPin, CheckCircle, GraduationCap, Heart, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -9,9 +9,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { selectJobById, selectHasApplied, selectApplicationByJobId, addApplication, toggleFavorite } from '@/slices/jobsSlice';
+import { selectHasApplied, selectApplicationByJobId, addApplication, toggleFavorite } from '@/slices/jobsSlice';
 import HeaderV2 from './Header';
 import Footer from '@/components/Footer';
+import { useExecuteRequest1Mutation } from '@/slices/services';
 
 const JobDetailPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,6 +22,39 @@ const JobDetailPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [applicationRef, setApplicationRef] = useState<string>('');
+
+  // Job data state
+  const [jobData, setJobData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [getJob] = useExecuteRequest1Mutation();
+  
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await getJob({
+          body: {
+            entityName: 'JobVacancy',
+            requestName: 'JobDetails',
+            recordId: 'c2a165e8-f48c-416f-8949-4851385954e2',
+          },
+        }).unwrap();
+        
+        console.log('jobsProps', response);
+        setJobData(response);
+      } catch (err) {
+        setError('Failed to load job details');
+        console.error('Error fetching job details:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobDetails();
+  }, []);
 
   // Criminal offence questions
   const [criminalOffence, setCriminalOffence] = useState<string | null>(null);
@@ -53,23 +87,76 @@ const JobDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id: jobId } = useParams<{ id: string }>();
 
-  // Get job data from Redux store
-  const job = useSelector((state: any) => selectJobById(state, jobId || ''));
-  const hasApplied = useSelector((state: any) => selectHasApplied(state, jobId || ''));
-  const application = useSelector((state: any) => selectApplicationByJobId(state, jobId || ''));
+  // For now, we'll use a mock job ID since we're getting data from API
+  const mockJobId = jobId || 'c2a165e8-f48c-416f-8949-4851385954e2';
+  const hasApplied = useSelector((state: any) => selectHasApplied(state, mockJobId));
+  const application = useSelector((state: any) => selectApplicationByJobId(state, mockJobId));
+
+  // Create a job object from API data for compatibility
+  const job = jobData ? {
+    id: mockJobId,
+    title: jobData['Job Vacancy']?.name || '',
+    postNumber: jobData['Job Vacancy']?.postNumber || '',
+    type: jobData['Job Vacancy']?.employmentType || '',
+    category: jobData['Job Vacancy']?.departmentIdName || '',
+    closingDate: jobData['Job Vacancy']?.closesOn || '',
+    salary: jobData['Job Vacancy']?.salary || '',
+    location: jobData['Job Vacancy']?.location || '',
+    description: jobData['Job Vacancy']?.jobDescription || '',
+    requirements: jobData['Job Vacancy']?.requirements || '',
+    status: jobData['Job Vacancy']?.status || '',
+    isFavorite: false, // This would need to be managed separately
+    // Additional properties for compatibility
+    company: jobData['Job Vacancy']?.departmentIdName || '',
+    stipend: jobData['Job Vacancy']?.salary || '',
+    grade: '', // Not provided in API response
+    postedDate: jobData['Job Vacancy']?.postedOn || '',
+    reference: jobData['Job Vacancy']?.postNumber || '',
+    responsibilities: jobData['Job Vacancy']?.jobDescription || '', // Use jobDescription as responsibilities
+  } : null;
 
   useEffect(() => {
-    if (!job && jobId) {
+    if (!jobData && !isLoading && error) {
       navigate('/jobs');
     }
-  }, [job, jobId, navigate]);
+  }, [jobData, isLoading, error, navigate]);
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#005f33]" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Loading Job Details</h2>
+          <p className="text-gray-600">Please wait while we fetch the job information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Job</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button onClick={() => navigate('/jobs')} className="bg-[#005f33] text-white">
+            Back to Jobs
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Job not found state
   if (!job) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h2>
-          <Button onClick={() => navigate('/jobs')} className="bg-[#0086C9] hover:bg-[#0086C9]">
+          <p className="text-gray-600 mb-6">The job you're looking for doesn't exist or has been removed.</p>
+          <Button onClick={() => navigate('/jobs')} className="bg-[#005f33] text-white">
             Back to Jobs
           </Button>
         </div>
@@ -392,11 +479,10 @@ const JobDetailPage: React.FC = () => {
           <section>
             <h2 className="text-lg font-semibold mb-4">{job.type === 'Learnership' ? 'Entry Requirements' : 'Requirements'}</h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <ul className="list-disc pl-6 space-y-2 text-gray-900">
-              {job.requirements.map((requirement, index) => (
-                <li key={index}>{requirement}</li>
-              ))}
-            </ul>
+            <div 
+              className="text-gray-900 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: job.requirements }}
+            />
           </section>
 
           <section>
@@ -404,11 +490,10 @@ const JobDetailPage: React.FC = () => {
               {job.type === 'Learnership' ? 'Learning Areas & Responsibilities' : 'Duties & Responsibilities'}
             </h2>
             <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <ul className="list-disc pl-6 space-y-2 text-gray-900">
-              {job.responsibilities.map((responsibility, index) => (
-                <li key={index}>{responsibility}</li>
-              ))}
-            </ul>
+            <div 
+              className="text-gray-900 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: job.responsibilities }}
+            />
           </section>
 
           {/* Enquiries Section */}

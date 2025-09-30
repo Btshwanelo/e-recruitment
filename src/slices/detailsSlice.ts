@@ -13,6 +13,60 @@ const initialState = {
     isProfileComplete: false as boolean,
     currentProfileStep: null as number | null,
     currentStepDescription: null as string | null,
+    completionPercentage: 0 as number,
+    progressSteps: [] as Array<{
+      title: string;
+      step: number;
+      isComplete: boolean;
+      isCurrent: boolean;
+    }>,
+    applicantDetails: {
+      personalInfo: {
+        firstName: null as string | null,
+        lastName: null as string | null,
+        initial: null as string | null,
+        idNumber: null as string | null,
+        age: null as number | null,
+        dateOfBirth: null as string | null,
+        passportNumber: null as string | null,
+        genderId: 0 as number,
+        titleId: 0 as number,
+        raceId: 0 as number,
+        rightToWorkStatusId: 0 as number,
+        disabilityStatusId: 0 as number,
+      },
+      contactInfo: {
+        email: null as string | null,
+        mobile: null as string | null,
+        alternativeNumber: null as string | null,
+        streetAddress: null as string | null,
+        city: null as string | null,
+        provinceId: 0 as number,
+        postalCode: null as string | null,
+        country: null as string | null,
+      },
+      qualifications: {
+        qualificationName: null as string | null,
+        institution: null as string | null,
+        yearObtained: 0 as number,
+      },
+      workExperience: {
+        companyName: null as string | null,
+        position: null as string | null,
+        fromDate: null as string | null,
+        toDate: null as string | null,
+        reasonForLeaving: null as string | null,
+      },
+      documents: {
+        cv: null as string | null,
+        idDocument: null as string | null,
+        qualificationsDoc: null as string | null,
+      },
+      languages: {
+        language: null as string | null,
+        proficiencyLevel: null as string | null,
+      },
+    },
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, MapPin, Heart, Menu, ChevronLeft, ChevronRight, Grid, Map, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,30 @@ import {
 import FooterV2 from './Footer';
 import HeaderV2 from './Header';
 import Footer from '@/components/Footer';
+import { useExecuteRequest1Mutation } from '@/slices/services';
 
 const JobOpeningsPage = () => {
   const [searchTags, setSearchTags] = useState(['Learnership', 'Graduate']);
   const [savedJobs, setSavedJobs] = useState([]);
+
+  const [getJobs, getJobsProps] = useExecuteRequest1Mutation();
+
+  console.log('jobs', getJobsProps?.data);
+
+  useEffect(() => {
+    getJobs({
+      body: {
+        RequestName: 'JobVacancyListing',
+        EntityName: 'JobVacancy',
+        InputParamters: {
+          PageNumber: 1,
+          PageSize: 12,
+          SearchText: '',
+          EmploymentType: 'Internship, Learnership',
+        },
+      },
+    });
+  }, []);
 
   const jobs = [
     {
@@ -189,7 +209,7 @@ const JobOpeningsPage = () => {
 
             {/* Pagination */}
             <div className="flex items-center border-t border-[#E4E7EC] justify-stretch mt-8">
-              <Pagination className='mt-6'>
+              <Pagination className="mt-6">
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious href="#" />

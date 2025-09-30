@@ -88,28 +88,94 @@ const AuthPageV2 = () => {
       }).unwrap();
 
       // Save profile data to Redux store
-      if (profileResponse.results.StatusCode === 200) {
+      console.log('Profile Response:', profileResponse);
+      console.log('Profile Response Status:', profileResponse.results?.StatusCode);
+      console.log('Profile Response Output:', profileResponse);
+      
+      if (profileResponse.results?.StatusCode === 200) {
+        // Handle both old and new response structures
+        const response = profileResponse?.response || profileResponse;
+        
+        if (response) {
         dispatch(
           updateProfileDetails({
             UserType: null, // Not provided in API response
-            Name: profileResponse.Name,
-            Surname: profileResponse.Surname,
-            Email: profileResponse.Email,
-            IdNumber: profileResponse.IdNumber,
-            Mobile: profileResponse.Mobile,
-            ProfileSteps: profileResponse.currentProfileStep?.toString() || null,
-            isProfileComplete: profileResponse.isProfileComplete,
-            currentProfileStep: profileResponse.currentProfileStep,
-            currentStepDescription: profileResponse.currentStepDescription,
+            Name: response.Name,
+            Surname: response.Surname,
+            Email: response.Email,
+            IdNumber: response.IdNumber,
+            Mobile: response.Mobile,
+            ProfileSteps: response.ProfileSteps?.toString() || null,
+            isProfileComplete: response.isProfileComplete,
+            currentProfileStep: response.ProfileSteps,
+            currentStepDescription: response.currentStepDescription,
+            completionPercentage: response.completionPercentage,
+            progressSteps: response.progressSteps || [],
+            applicantDetails: response.applicantDetails || {
+              personalInfo: {
+                firstName: null,
+                lastName: null,
+                initial: null,
+                idNumber: null,
+                age: null,
+                dateOfBirth: null,
+                passportNumber: null,
+                genderId: 0,
+                titleId: 0,
+                raceId: 0,
+                rightToWorkStatusId: 0,
+                disabilityStatusId: 0,
+              },
+              contactInfo: {
+                email: null,
+                mobile: null,
+                alternativeNumber: null,
+                streetAddress: null,
+                city: null,
+                provinceId: 0,
+                postalCode: null,
+                country: null,
+              },
+              qualifications: {
+                qualificationName: null,
+                institution: null,
+                yearObtained: 0,
+              },
+              workExperience: {
+                companyName: null,
+                position: null,
+                fromDate: null,
+                toDate: null,
+                reasonForLeaving: null,
+              },
+              documents: {
+                cv: null,
+                idDocument: null,
+                qualificationsDoc: null,
+              },
+              languages: {
+                language: null,
+                proficiencyLevel: null,
+              },
+            },
           })
         );
 
-        // Navigate based on profile completion status
-        if (profileResponse.isProfileComplete) {
-          navigate(redirectPath);
+          // Navigate based on profile completion status
+          if (response.isProfileComplete) {
+            navigate(redirectPath);
+          } else {
+            navigate('/profile');
+          }
         } else {
+          // Fallback navigation if response structure doesn't match
+          console.log('Profile response structure mismatch, using fallback navigation');
           navigate('/profile');
         }
+      } else {
+        // Fallback navigation if status code is not 200
+        console.log('Profile response status not 200, using fallback navigation');
+        navigate('/profile');
       }
     } catch (error) {
       setApiErrors({ auth: 'Login failed. Please check your credentials.' });
@@ -178,28 +244,94 @@ const AuthPageV2 = () => {
       }).unwrap();
 
       // Step 5: Save profile data to Redux store
-      if (profileResponse.results.StatusCode === 200) {
+      console.log('Signup Profile Response:', profileResponse);
+      console.log('Signup Profile Response Status:', profileResponse.results?.StatusCode);
+      console.log('Signup Profile Response Output:', profileResponse);
+      
+      if (profileResponse.results?.StatusCode === 200) {
+        // Handle both old and new response structures
+        const response = profileResponse?.response || profileResponse;
+        
+        if (response) {
         dispatch(
           updateProfileDetails({
             UserType: null, // Not provided in API response
-            Name: profileResponse.Name,
-            Surname: profileResponse.Surname,
-            Email: profileResponse.Email,
-            IdNumber: profileResponse.IdNumber,
-            Mobile: profileResponse.Mobile,
-            ProfileSteps: profileResponse.currentProfileStep?.toString() || null,
-            isProfileComplete: profileResponse.isProfileComplete,
-            currentProfileStep: profileResponse.currentProfileStep,
-            currentStepDescription: profileResponse.currentStepDescription,
+            Name: response.Name,
+            Surname: response.Surname,
+            Email: response.Email,
+            IdNumber: response.IdNumber,
+            Mobile: response.Mobile,
+            ProfileSteps: response.ProfileSteps?.toString() || null,
+            isProfileComplete: response.isProfileComplete,
+            currentProfileStep: response.ProfileSteps,
+            currentStepDescription: response.currentStepDescription,
+            completionPercentage: response.completionPercentage,
+            progressSteps: response.progressSteps || [],
+            applicantDetails: response.applicantDetails || {
+              personalInfo: {
+                firstName: null,
+                lastName: null,
+                initial: null,
+                idNumber: null,
+                age: null,
+                dateOfBirth: null,
+                passportNumber: null,
+                genderId: 0,
+                titleId: 0,
+                raceId: 0,
+                rightToWorkStatusId: 0,
+                disabilityStatusId: 0,
+              },
+              contactInfo: {
+                email: null,
+                mobile: null,
+                alternativeNumber: null,
+                streetAddress: null,
+                city: null,
+                provinceId: 0,
+                postalCode: null,
+                country: null,
+              },
+              qualifications: {
+                qualificationName: null,
+                institution: null,
+                yearObtained: 0,
+              },
+              workExperience: {
+                companyName: null,
+                position: null,
+                fromDate: null,
+                toDate: null,
+                reasonForLeaving: null,
+              },
+              documents: {
+                cv: null,
+                idDocument: null,
+                qualificationsDoc: null,
+              },
+              languages: {
+                language: null,
+                proficiencyLevel: null,
+              },
+            },
           })
         );
 
-        // Step 6: Navigate based on profile completion status
-        if (profileResponse.isProfileComplete) {
-          navigate(redirectPath);
+          // Step 6: Navigate based on profile completion status
+          if (response.isProfileComplete) {
+            navigate(redirectPath);
+          } else {
+            navigate('/profile');
+          }
         } else {
+          // Fallback navigation if response structure doesn't match
+          console.log('Signup profile response structure mismatch, using fallback navigation');
           navigate('/profile');
         }
+      } else {
+        // Fallback navigation if status code is not 200
+        console.log('Signup profile response status not 200, using fallback navigation');
+        navigate('/profile');
       }
     } catch (error) {
       setApiErrors({ signup: 'Registration failed. Please try again.' });

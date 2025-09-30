@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,93 @@ import { Upload, FileText, X, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HeaderV2 from './Header';
 import { useNavigate } from 'react-router-dom';
+import { useExecuteRequest1Mutation } from '@/slices/services';
+
+// Master data types
+interface MasterDataOption {
+  lable: string;
+  value: string;
+}
+
+interface MasterDataSchema {
+  schemaName: string;
+  options: MasterDataOption[];
+}
+
+interface MasterDataResponse {
+  staticData: MasterDataSchema[];
+  clientMessage: string | null;
+  results: any;
+  gotoUrl: string | null;
+}
+
+// Custom hook for managing master data
+const useMasterData = (currentStep: string) => {
+  const [masterData, setMasterData] = useState<MasterDataResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [getMasterData] = useExecuteRequest1Mutation();
+
+  // Map step names to API page parameters
+  const getPageParameter = (step: string): string => {
+    const stepMap: { [key: string]: string } = {
+      personal: 'personal-info',
+      contact: 'contact-info',
+      qualifications: 'qualifications',
+      'work-experience': 'work-experience',
+      cv: 'cv-upload',
+    };
+    return stepMap[step] || 'personal-info';
+  };
+
+  // Load master data for current step
+  const loadMasterData = async (step: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await getMasterData({
+        body: {
+          entityName: 'Applicant',
+          requestName: 'RetrieveMasterValues',
+          inputParamters: {
+            Page: getPageParameter(step),
+          },
+        },
+      }).unwrap();
+
+      console.log(`Master data for ${step}:`, response);
+      setMasterData(response);
+    } catch (err) {
+      setError('Failed to load master data');
+      console.error('Error loading master data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Get options for a specific schema
+  const getOptionsForSchema = (schemaName: string): MasterDataOption[] => {
+    if (!masterData?.staticData) return [];
+
+    const schema = masterData.staticData.find((item) => item.schemaName === schemaName);
+    return schema?.options || [];
+  };
+
+  // Load master data when step changes
+  useEffect(() => {
+    loadMasterData(currentStep);
+  }, [currentStep]);
+
+  return {
+    masterData,
+    isLoading,
+    error,
+    getOptionsForSchema,
+    loadMasterData,
+  };
+};
 
 const ProgressStepsProgressIconsCentered = ({ currentStep }: { currentStep: string }) => {
   const steps = [
@@ -175,6 +262,9 @@ const dummyContactInfo: ContactFormData = {
 const ProfilePage: React.FC = () => {
   // Active tab state
   const [activeTab, setActiveTab] = useState<string>('personal');
+
+  // Use the custom master data hook
+  const { getOptionsForSchema } = useMasterData(activeTab);
 
   // Form data states
   const [personalFormData, setPersonalFormData] = useState<ProfileFormData>(dummyPersonalInfo);
@@ -617,11 +707,11 @@ const ProfilePage: React.FC = () => {
                               <SelectValue placeholder="Select a title" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Mr">Mr.</SelectItem>
-                              <SelectItem value="Mrs">Mrs.</SelectItem>
-                              <SelectItem value="Ms">Ms.</SelectItem>
-                              <SelectItem value="Dr">Dr.</SelectItem>
-                              <SelectItem value="Prof">Prof.</SelectItem>
+                              {getOptionsForSchema('TitleId').map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.lable}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -680,11 +770,11 @@ const ProfilePage: React.FC = () => {
                               <SelectValue placeholder="Select race" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Black African">Black African</SelectItem>
-                              <SelectItem value="Coloured">Coloured</SelectItem>
-                              <SelectItem value="Indian/Asian">Indian/Asian</SelectItem>
-                              <SelectItem value="White">White</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
+                              {getOptionsForSchema('RaceId').map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.lable}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -709,10 +799,11 @@ const ProfilePage: React.FC = () => {
                               <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Male">Male</SelectItem>
-                              <SelectItem value="Female">Female</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                              <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                              {getOptionsForSchema('GenderId').map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.lable}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -736,10 +827,11 @@ const ProfilePage: React.FC = () => {
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="South African Citizen">South African Citizen</SelectItem>
-                              <SelectItem value="Permanent Resident">Permanent Resident</SelectItem>
-                              <SelectItem value="Work Permit Holder">Work Permit Holder</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
+                              {getOptionsForSchema('RightToWorkStatusId').map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.lable}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -750,8 +842,11 @@ const ProfilePage: React.FC = () => {
                               <SelectValue placeholder="Select disability status" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="No">No</SelectItem>
-                              <SelectItem value="Yes">Yes</SelectItem>
+                              {getOptionsForSchema('Disabled').map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.lable}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -786,13 +881,21 @@ const ProfilePage: React.FC = () => {
                           >
                             <div className="space-y-2">
                               <Label htmlFor={`language-${language.id}`}>Language</Label>
-                              <Input
-                                id={`language-${language.id}`}
+                              <Select
                                 value={language.language}
-                                onChange={(e) => handleLanguageChange(language.id, 'language', e.target.value)}
-                                placeholder="Enter language"
-                                className="w-full"
-                              />
+                                onValueChange={(value) => handleLanguageChange(language.id, 'language', value)}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select language" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {getOptionsForSchema('LanguageId').map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.lable}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor={`proficiency-${language.id}`}>Speak - Proficiency Level</Label>
@@ -804,11 +907,11 @@ const ProfilePage: React.FC = () => {
                                   <SelectValue placeholder="Select proficiency" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Native">Native</SelectItem>
-                                  <SelectItem value="Fluent">Fluent</SelectItem>
-                                  <SelectItem value="Advanced">Advanced</SelectItem>
-                                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                  <SelectItem value="Basic">Basic</SelectItem>
+                                  {getOptionsForSchema('SpeakingProficiencyId').map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.lable}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -822,11 +925,11 @@ const ProfilePage: React.FC = () => {
                                   <SelectValue placeholder="Select proficiency" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Native">Native</SelectItem>
-                                  <SelectItem value="Fluent">Fluent</SelectItem>
-                                  <SelectItem value="Advanced">Advanced</SelectItem>
-                                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                  <SelectItem value="Basic">Basic</SelectItem>
+                                  {getOptionsForSchema('ReadOrWriteProficiencyId').map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.lable}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -835,7 +938,7 @@ const ProfilePage: React.FC = () => {
                                 type="button"
                                 variant="outline"
                                 onClick={() => handleLanguageRemove(language.id)}
-                                className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                                className="w-full h-11 text-red-600 border-red-300 hover:bg-red-50"
                               >
                                 Remove
                               </Button>
@@ -1023,14 +1126,11 @@ const ProfilePage: React.FC = () => {
                                 <SelectValue placeholder="Select qualification" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="National Senior Certificate (NSC)">National Senior Certificate (NSC)</SelectItem>
-                                <SelectItem value="Higher Certificate">Higher Certificate</SelectItem>
-                                <SelectItem value="Diploma">Diploma</SelectItem>
-                                <SelectItem value="Bachelor's Degree">Bachelor's Degree</SelectItem>
-                                <SelectItem value="Honours">Honours</SelectItem>
-                                <SelectItem value="Master's Degree">Master's Degree</SelectItem>
-                                <SelectItem value="Doctorate">Doctorate</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
+                                {getOptionsForSchema('QualificationTypeId').map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.lable}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>
