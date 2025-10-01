@@ -43,12 +43,13 @@ function PublicRoute({ children }: PublicRouteProps) {
   const isValidAuth = isAuthenticated && validateToken();
 
   // Only redirect if on auth page and the user is authenticated
-  const isAuthPage = location.pathname === '/auth' || location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/';
-  
+  const isAuthPage =
+    location.pathname === '/auth' || location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/';
+
   if (isValidAuth && isAuthPage) {
     // For debugging
     console.log('Redirecting authenticated user from public route to dashboard');
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;

@@ -212,7 +212,7 @@ const AppliedJob: React.FC = () => {
           </section>
 
           <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={() => navigate('/jobs')} className="bg-[#005f33]  text-white w-[180px]">
+            <Button variant="outline" onClick={() => navigate('/')} className="bg-[#005f33]  text-white w-[180px]">
               Back to Jobs
             </Button>
             {/* <Button className="bg-green-text-green-500 w-[180px] hover:bg-green-text-green-500" onClick={handleViewApplication}>

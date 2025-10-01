@@ -444,7 +444,7 @@ const ProfileLayout: React.FC = () => {
 
       if (activeTab === 'cv') {
         // After CV step, navigate to jobs
-        navigate('/jobs');
+        navigate('/');
       } else {
         setActiveTab(nextStep);
       }
@@ -452,7 +452,7 @@ const ProfileLayout: React.FC = () => {
       console.error('Error saving step:', error);
       const nextStep = getNextStep(activeTab);
       if (activeTab === 'cv') {
-        navigate('/jobs');
+        navigate('/');
       } else {
         setActiveTab(nextStep);
       }

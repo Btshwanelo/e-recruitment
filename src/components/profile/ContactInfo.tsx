@@ -14,13 +14,7 @@ interface ContactInfoProps {
   isLoading: boolean;
 }
 
-const ContactInfo: React.FC<ContactInfoProps> = ({
-  formData,
-  onFormDataChange,
-  getOptionsForSchema,
-  onSubmit,
-  isLoading,
-}) => {
+const ContactInfo: React.FC<ContactInfoProps> = ({ formData, onFormDataChange, getOptionsForSchema, onSubmit, isLoading }) => {
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     onFormDataChange({ ...formData, [name]: value });
@@ -31,22 +25,15 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
       <CardContent className="pt-6 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Contact info</h2>
         <p className="text-gray-500 text-sm mb-6">
-          Please provide your contact information. This information will be used to communicate with you regarding job
-          applications and other important updates.
+          Please provide your contact information. This information will be used to communicate with you regarding job applications and
+          other important updates.
         </p>
 
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="email">Email address</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleContactChange}
-                className="w-full"
-              />
+              <Input id="email" name="email" type="email" value={formData.email} onChange={handleContactChange} className="w-full" />
               <p className="text-xs text-gray-500">This email will be used for all communications</p>
             </div>
             <div className="space-y-2">
@@ -99,10 +86,7 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="province">Province</Label>
-                <Select 
-                  value={formData.province} 
-                  onValueChange={(value) => onFormDataChange({ ...formData, province: value })}
-                >
+                <Select value={formData.province} onValueChange={(value) => onFormDataChange({ ...formData, province: value })}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select province" />
                   </SelectTrigger>
@@ -128,14 +112,18 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleContactChange}
-                  placeholder="Enter country"
-                  className="w-full"
-                />
+                <Select value={formData.province} onValueChange={(value) => onFormDataChange({ ...formData, province: value })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getOptionsForSchema('CountryId').map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.lable}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -144,11 +132,7 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
             <Button variant="outline" type="button" className="bg-white border border-[#005f33] text-[#005f33] w-[180px]">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-[#005f33] w-[180px] hover:bg-[#005f33] disabled:opacity-50"
-            >
+            <Button type="submit" disabled={isLoading} className="bg-[#005f33] w-[180px] hover:bg-[#005f33] disabled:opacity-50">
               {isLoading ? 'Saving...' : 'Save Contact Info'}
             </Button>
           </div>

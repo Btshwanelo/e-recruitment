@@ -57,7 +57,7 @@ const TableCell = ({ children, className }: { children: React.ReactNode; classNa
   <td className={`px-4 py-4 text-sm ${className}`}>{children}</td>
 );
 
-const JobListingsPage: React.FC = () => {
+const SavedJobs: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -314,7 +314,7 @@ const JobListingsPage: React.FC = () => {
             style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
           >
             <CardHeader>
-              <CardTitle className="text-4xl font-bold mb-8">Job Openings</CardTitle>
+              <CardTitle className="text-4xl font-bold mb-8">Saved Jobs</CardTitle>
               <p className="text-gray-300 font-normal text-xl mt-2">Discover exciting career opportunities</p>
             </CardHeader>
           </Card>
@@ -352,7 +352,7 @@ const JobListingsPage: React.FC = () => {
           style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
         >
           <CardHeader>
-            <CardTitle className="text-4xl font-bold mb-8">Job Openings</CardTitle>
+            <CardTitle className="text-4xl font-bold mb-8">Saved Jobs</CardTitle>
             <p className="text-gray-300 font-normal text-xl mt-2">
               Discover {jobs.length} exciting career opportunit{jobs.length !== 1 ? 'ies' : 'y'}
             </p>
@@ -612,4 +612,4 @@ const JobListingsPage: React.FC = () => {
   );
 };
 
-export default JobListingsPage;
+export default SavedJobs;

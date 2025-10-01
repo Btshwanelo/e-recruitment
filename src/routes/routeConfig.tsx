@@ -13,6 +13,7 @@ import AuthPageV2 from '@/pages-2/auth.tsx';
 import ApplicationsListing from '@/pages-2/ApplicationsListing.tsx';
 import AppliedJob from '@/pages-2/AppliedJob.tsx';
 import ProfilePage from '@/pages-2/ProfilePage.tsx';
+import SavedJobs from '@/pages-2/SavedJobs.tsx';
 
 // Public routes configuration
 export const publicRoutes = [
@@ -59,6 +60,11 @@ export const protectedRoutes = [
   {
     path: '/applications',
     element: <ApplicationsListing />,
+    requiresPublicRoute: false,
+  },
+  {
+    path: '/saved-jobs',
+    element: <SavedJobs />,
     requiresPublicRoute: false,
   },
   {

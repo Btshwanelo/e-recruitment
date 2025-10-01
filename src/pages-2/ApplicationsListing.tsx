@@ -130,7 +130,7 @@ const ApplicationsListing: React.FC = () => {
                 <p className="text-gray-600 mb-6">
                   You haven't applied for any jobs yet. Start exploring opportunities and submit your applications.
                 </p>
-                <Button className="bg-[#0086C9] hover:bg-[#0086C9]" onClick={() => navigate('/jobs')}>
+                <Button className="bg-[#0086C9] hover:bg-[#0086C9]" onClick={() => navigate('/')}>
                   Browse Jobs
                 </Button>
               </div>
@@ -164,7 +164,7 @@ const ApplicationsListing: React.FC = () => {
         {/* Search */}
         <div className="flex flex-col md:flex-row justify-between gap-3 mb-6">
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="bg-[#005f33] text-white border-none" onClick={() => navigate('/jobs')}>
+            <Button variant="outline" className="bg-[#005f33] text-white border-none" onClick={() => navigate('/')}>
               Browse More Jobs
             </Button>
           </div>

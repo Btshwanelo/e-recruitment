@@ -5,7 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import {
   useExternalRequestMutation,
   useExecuteRequest2Mutation,
@@ -420,7 +420,10 @@ const AuthPageV2 = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
+    <div className="min-h-screen relative flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
+      <div className="absolute bg-inherit hover:bg-white top-6 right-6 cursor-pointer" onClick={() => navigate('/')}>
+        <X size={35} className="font-semibold text-[#095C37]" />
+      </div>
       {/* Logo */}
       <div className="mb-2">
         <img src="/dcs-logo.png" alt="RHS Services Logo" className="h-20" />
@@ -492,6 +495,64 @@ const AuthPageV2 = () => {
 
               return (
                 <Form className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name <span className="text-red-500">*</span>
+                      </label>
+                      <Field name="firstName">
+                        {({ field }: any) => (
+                          <Input
+                            {...field}
+                            id="firstName"
+                            type="text"
+                            placeholder="Enter first name"
+                            // disabled={!emailVerified}
+                            className={`w-full ${errors.firstName && touched.firstName ? 'border-red-500' : 'border-gray-300'} `}
+                          />
+                        )}
+                      </Field>
+                      <ErrorMessage name="firstName" component="p" className="mt-1 text-sm text-red-600" />
+                    </div>
+
+                    <div>
+                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name <span className="text-red-500">*</span>
+                      </label>
+                      <Field name="lastName">
+                        {({ field }: any) => (
+                          <Input
+                            {...field}
+                            id="lastName"
+                            type="text"
+                            placeholder="Enter last name"
+                            // disabled={!emailVerified}
+                            className={`w-full ${errors.lastName && touched.lastName ? 'border-red-500' : 'border-gray-300'} `}
+                          />
+                        )}
+                      </Field>
+                      <ErrorMessage name="lastName" component="p" className="mt-1 text-sm text-red-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                      ID Number <span className="text-red-500">*</span>
+                    </label>
+                    <Field name="idNumber">
+                      {({ field }: any) => (
+                        <Input
+                          {...field}
+                          id="idNumber"
+                          type="text"
+                          placeholder="Enter your ID number"
+                          // disabled={!emailVerified}
+                          className={`w-full ${errors.idNumber && touched.idNumber ? 'border-red-500' : 'border-gray-300'} `}
+                        />
+                      )}
+                    </Field>
+                    <ErrorMessage name="idNumber" component="p" className="mt-1 text-sm text-red-600" />
+                  </div>
+
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                       Email <span className="text-red-500">*</span>
@@ -534,65 +595,6 @@ const AuthPageV2 = () => {
                         Email verified successfully
                       </p>
                     )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                        First Name <span className="text-red-500">*</span>
-                      </label>
-                      <Field name="firstName">
-                        {({ field }: any) => (
-                          <Input
-                            {...field}
-                            id="firstName"
-                            type="text"
-                            placeholder="Enter first name"
-                            disabled={!emailVerified}
-                            className={`w-full ${errors.firstName && touched.firstName ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          />
-                        )}
-                      </Field>
-                      <ErrorMessage name="firstName" component="p" className="mt-1 text-sm text-red-600" />
-                    </div>
-
-                    <div>
-                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                        Last Name <span className="text-red-500">*</span>
-                      </label>
-                      <Field name="lastName">
-                        {({ field }: any) => (
-                          <Input
-                            {...field}
-                            id="lastName"
-                            type="text"
-                            placeholder="Enter last name"
-                            disabled={!emailVerified}
-                            className={`w-full ${errors.lastName && touched.lastName ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          />
-                        )}
-                      </Field>
-                      <ErrorMessage name="lastName" component="p" className="mt-1 text-sm text-red-600" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                      ID Number <span className="text-red-500">*</span>
-                    </label>
-                    <Field name="idNumber">
-                      {({ field }: any) => (
-                        <Input
-                          {...field}
-                          id="idNumber"
-                          type="text"
-                          placeholder="Enter your ID number"
-                          disabled={!emailVerified}
-                          className={`w-full ${errors.idNumber && touched.idNumber ? 'border-red-500' : 'border-gray-300'} ${!emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        />
-                      )}
-                    </Field>
-                    <ErrorMessage name="idNumber" component="p" className="mt-1 text-sm text-red-600" />
                   </div>
 
                   <div>
@@ -823,8 +825,8 @@ const AuthPageV2 = () => {
           isError={isErrorConfirmOTP}
           errorMessage={errorConfirmOTP?.data || 'Incorrect OTP'}
           data-testid="signup-otp-modal"
-          title="please check your phone"
-          description={`We've sent a code to your phone number`}
+          title="Please check your email"
+          description={`We've sent a code to your email`}
         />
       )}
     </div>
