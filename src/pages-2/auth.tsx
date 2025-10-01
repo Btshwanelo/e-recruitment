@@ -442,7 +442,7 @@ const AuthPageV2 = () => {
           <button
             className={`flex-1 py-2 text-center border-2 ${
               activeTab === 'signup' ? 'bg-white border-primary text-gray-800 font-medium' : 'bg-gray-50 border-gray-200 text-gray-500'
-            } rounded-l-md transition-colors`}
+            } rounded-l-lg transition-colors`}
             onClick={() => handleTabChange('signup')}
             type="button"
           >
@@ -451,7 +451,7 @@ const AuthPageV2 = () => {
           <button
             className={`flex-1 py-2 text-center border-2 ${
               activeTab === 'login' ? 'bg-white border-primary text-gray-800 font-medium' : 'bg-gray-50 border-gray-200 text-gray-500'
-            } rounded-r-md transition-colors`}
+            } rounded-r-lg transition-colors`}
             onClick={() => handleTabChange('login')}
             type="button"
           >
@@ -494,7 +494,7 @@ const AuthPageV2 = () => {
               const passwordsMatch = values.password === values.confirmPassword;
 
               return (
-                <Form className="space-y-6">
+                <Form className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -581,7 +581,7 @@ const AuthPageV2 = () => {
                               }
                             }}
                             disabled={!field.value || !!errors.email || isLoadingOTP}
-                            className="px-4 py-2 bg-[#005f33] h-11 text-white text-sm font-medium disabled:bg-gray-400"
+                            className="px-4 py-2 bg-[#005f33] h-10 text-white text-sm font-medium disabled:bg-gray-400"
                           >
                             {isLoadingOTP ? 'Sending...' : emailVerified ? 'Verified ✓' : 'Verify'}
                           </Button>
@@ -701,7 +701,7 @@ const AuthPageV2 = () => {
 
                   <Button
                     type="submit"
-                    className="w-full py-6 bg-[#005f33] font-semibold text-white disabled:bg-gray-400"
+                    className="w-full py-5 rounded-lg bg-[#005f33] font-semibold text-white disabled:bg-gray-400"
                     disabled={isLoading || !emailVerified}
                   >
                     {isLoading ? 'Creating account...' : !emailVerified ? 'Verify email to continue' : 'Get started'}
@@ -720,7 +720,7 @@ const AuthPageV2 = () => {
             onSubmit={handleLogin}
           >
             {({ errors, touched }) => (
-              <Form className="space-y-6">
+              <Form className="space-y-4">
                 <div>
                   <label htmlFor="loginEmail" className="block text-sm font-medium text-gray-700 mb-1">
                     Email <span className="text-red-500">*</span>
@@ -776,7 +776,7 @@ const AuthPageV2 = () => {
                   </button>
                 </div>
 
-                <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
+                <Button type="submit" className="w-full py-5 rounded-lg bg-[#005f33] font-semibold text-white" disabled={isLoading}>
                   {isLoading ? 'Logging in...' : 'Log in'}
                 </Button>
               </Form>

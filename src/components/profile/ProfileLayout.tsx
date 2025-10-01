@@ -27,17 +27,8 @@ import WorkExperienceComponent from './WorkExperience';
 import CVManagement from './CVManagement';
 import { showSuccessToast } from '../SuccessToast';
 import { showErrorToast } from '../ErrorToast ';
+import Footer from '../Footer';
 
-const Footer = () => (
-  <footer className="bg-[#005f33] text-white w-full py-6 mt-10">
-    <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-      <div className="mb-4 md:mb-0"></div>
-      <div>
-        <p className="text-sm">© 2077 EZRA. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-);
 
 const ProfileLayout: React.FC = () => {
   // Get profile data from Redux store
@@ -1050,7 +1041,7 @@ const ProfileLayout: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Profile Card */}
         <Card
-          className="w-full min-h-[180px] mb-10 text-white border-none"
+          className="w-full min-h-[150px] mb-10 text-white border-none"
           style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
         >
           <CardHeader>

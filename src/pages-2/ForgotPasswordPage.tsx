@@ -180,7 +180,7 @@ const ForgotPasswordPage = () => {
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
 
-            <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
+            <Button type="submit" className="w-full py-5 rounded-lg bg-[#005f33] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Sending...' : 'Send Reset Code'}
             </Button>
           </form>
@@ -208,7 +208,7 @@ const ForgotPasswordPage = () => {
               <p className="mt-2 text-xs text-gray-500">Try: 123456</p>
             </div>
 
-            <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
+            <Button type="submit" className="w-full py-5 rounded-lg bg-[#005f33] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Verifying...' : 'Verify Code'}
             </Button>
 
@@ -286,7 +286,7 @@ const ForgotPasswordPage = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full py-6 bg-[#005f33] font-semibold text-white" disabled={isLoading}>
+            <Button type="submit" className="w-full py-5 rounded-lg bg-[#005f33] font-semibold text-white" disabled={isLoading}>
               {isLoading ? 'Resetting Password...' : 'Reset Password'}
             </Button>
           </form>

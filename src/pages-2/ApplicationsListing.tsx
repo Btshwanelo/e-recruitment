@@ -112,7 +112,7 @@ const ApplicationsListing: React.FC = () => {
         <div className="container mx-auto mb-auto px-4 py-8">
           {/* Title Card */}
           <Card
-            className="w-full min-h-[180px] mb-10 text-white border-none"
+            className="w-full min-h-[150px] mb-10 text-white border-none"
             style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
           >
             <CardHeader>

@@ -176,7 +176,6 @@ const JobDetailPage: React.FC = () => {
   const handleSubmitCriteria = async () => {
     try {
       const skillMetrics = Object.entries(criteriaAnswers).map(([questionId, answer]) => ({
-        JobApplication: jobApplicationId || 'ebbcaf09-33d0-490b-a740-8602fab0dc0b', // Use job application ID from Z83 response
         QualifyingCriteria: questionId,
         SelectedAnswer: answer,
       }));
@@ -188,6 +187,7 @@ const JobDetailPage: React.FC = () => {
         body: {
           entityName: 'JobApplication',
           requestName: 'UpsertRegEricruit',
+          RecordId: jobApplicationId || 'ebbcaf09-33d0-490b-a740-8602fab0dc0b', // Use job application ID from Z83 response
           inputParamters: {
             Entity: {},
             SkillMetrics: skillMetrics,

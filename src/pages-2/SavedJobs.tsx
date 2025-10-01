@@ -346,14 +346,14 @@ const SavedJobs: React.FC = () => {
       <HeaderV2 />
 
       <div className="container mx-auto mb-auto px-4 py-8">
-        {/* Title Card */}
         <Card
-          className="w-full min-h-[180px] mb-10 text-white border-none"
+          className="w-full min-h-[150px] mb-10 text-white border-none"
           style={{ background: 'linear-gradient(27deg, #182230 8.28%, #344054 91.72%)' }}
         >
           <CardHeader>
             <CardTitle className="text-4xl font-bold mb-8">Saved Jobs</CardTitle>
             <p className="text-gray-300 font-normal text-xl mt-2">
+              {' '}
               Discover {jobs.length} exciting career opportunit{jobs.length !== 1 ? 'ies' : 'y'}
             </p>
           </CardHeader>
