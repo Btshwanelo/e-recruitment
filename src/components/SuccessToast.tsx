@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { CircleCheckBig, X } from 'lucide-react';
 
 const SuccessToast = ({ message }) => (
-  <div className="flex items-start gap-3 min-w-[300px] bg-green-500 text-white p-4 rounded">
+  <div className="flex items-start gap-3 min-w-[300px] bg-green-800 text-white p-4 rounded">
     <div className="flex-1 flex items-start gap-3">
       <div className="w-5 h-5 flex-shrink-0 mt-0.5">
         <CircleCheckBig />

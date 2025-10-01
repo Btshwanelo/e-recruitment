@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Briefcase, Building, MapPin, CheckCircle, GraduationCap, Heart, Loader2, RotateCcw } from 'lucide-react';
+import {
+  Calendar,
+  Briefcase,
+  Building,
+  MapPin,
+  CheckCircle,
+  GraduationCap,
+  Heart,
+  Loader2,
+  RotateCcw,
+  CheckCheck,
+  CircleCheck,
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -18,6 +30,8 @@ import {
   useExecuteRequest5Mutation,
   useExecuteRequest6Mutation,
 } from '@/slices/services';
+import Loader from '@/components/Loader';
+import { showSuccessToast } from '@/components/SuccessToast';
 
 // Signature Capture Component
 const SignatureCapture: React.FC<{
@@ -384,19 +398,6 @@ const JobDetailPage: React.FC = () => {
     }
   }, [jobData, isLoading, error, navigate]);
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#005f33]" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Loading Job Details</h2>
-          <p className="text-gray-600">Please wait while we fetch the job information...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Error state
   if (error) {
     return (
@@ -550,7 +551,7 @@ const JobDetailPage: React.FC = () => {
         response?.UpsertResponse?.applicationReference ||
         `APP-${Date.now().toString().slice(-8)}-${job.postNumber || job.id.slice(-4).toUpperCase()}`;
       const responseJobApplicationId = response?.UpsertResponse?.recordId;
-
+      showSuccessToast(`z83 submitted! Application Reference', ${responseApplicationRef} `);
       setApplicationRef(responseApplicationRef);
       setJobApplicationId(responseJobApplicationId);
 
@@ -748,10 +749,10 @@ const JobDetailPage: React.FC = () => {
   const JobTypeIcon = getJobTypeIcon();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 grid grid-rows-[auto_1fr_auto]">
       <HeaderV2 />
 
-      <div className="container mx-auto px-4 py-8 pb-24">
+      <div className="container mx-auto px-4 py-8">
         {/* Title Card */}
         <Card
           className="w-full min-h-[180px] mb-10 text-white border-none"
@@ -761,213 +762,220 @@ const JobDetailPage: React.FC = () => {
             <CardTitle className="text-4xl font-bold">{hasApplied ? 'Applied Position Details' : 'Job Details'}</CardTitle>
           </CardHeader>
         </Card>
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <>
+            {/* Job Title Section */}
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold mb-4">
+                {job.title}
+                {/* {job.postNumber && <span className="text-lg font-normal text-gray-600 ml-2">({job.postNumber})</span>} */}
+              </h1>
 
-        {/* Job Title Section */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-4">
-            {job.title}
-            {job.postNumber && <span className="text-lg font-normal text-gray-600 ml-2">({job.postNumber})</span>}
-          </h1>
-
-          {/* Applied Status Banner */}
-          {hasApplied && application && (
-            <div className="bg-green-50 border border-green-200 rounded-lg py-1 px-4  mb-8">
-              <div className="flex items-center">
-                <div>
-                  <h3 className="text-lg font-semibold text-green-800">Application Submitted</h3>
-                  <p className="text-green-700">
-                    You applied for this position on {formatDate(application.appliedDate)} - Status:{' '}
-                    <span className="font-medium capitalize">{application.status.replace('_', ' ')}</span>
-                  </p>
+              {/* Applied Status Banner */}
+              {hasApplied && application && (
+                <div className="bg-green-50 border border-green-200 rounded-lg py-1 px-4  mb-8">
+                  <div className="flex items-center">
+                    <div>
+                      <h3 className="text-lg font-semibold text-green-800">Application Submitted</h3>
+                      <p className="text-green-700">
+                        You applied for this position on {formatDate(application.appliedDate)} - Status:{' '}
+                        <span className="font-medium capitalize">{application.status.replace('_', ' ')}</span>
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          <div className="flex flex-wrap gap-2 mb-8">
-            <Button
-              variant="outline"
-              className={`bg-white border border-[#D0D5DD] ${job.isFavorite ? 'text-red-600' : ''}`}
-              onClick={handleToggleFavorite}
-            >
-              <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600' : ''}`} />
-              {job.isFavorite ? 'Remove from Favorites' : 'Save to Favorites'}
-            </Button>
-
-            {!hasApplied ? (
-              <Button className="bg-[#005f33]" onClick={handleApply}>
-                Apply Now
-              </Button>
-            ) : (
-              <>
-                <Button className="bg-[#005f33] cursor-default" disabled>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Applied
+              <div className="flex flex-wrap gap-2 mb-8">
+                <Button
+                  variant="outline"
+                  className={`bg-white border border-[#D0D5DD] ${job.isFavorite ? 'text-red-600' : ''}`}
+                  onClick={handleToggleFavorite}
+                >
+                  <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600' : ''}`} />
+                  {job.isFavorite ? 'Remove from Favorites' : 'Save to Favorites'}
                 </Button>
-                <Button variant="outline" className="bg-[#005f33]  text-white border-none" onClick={handleViewApplication}>
-                  View My Application
-                </Button>
-              </>
-            )}
-          </div>
 
-          <div className="flex flex-wrap gap-6 mt-8">
-            <div className="flex items-center text-gray-700">
-              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                <JobTypeIcon className="w-5 h-5 text-[#0086C9]" />
+                {!hasApplied ? (
+                  <Button className="bg-[#005f33]" onClick={handleApply}>
+                    Apply Now
+                  </Button>
+                ) : (
+                  <>
+                    <Button className="bg-[#005f33] cursor-default" disabled>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Applied
+                    </Button>
+                    <Button variant="outline" className="bg-[#005f33]  text-white border-none" onClick={handleViewApplication}>
+                      View My Application
+                    </Button>
+                  </>
+                )}
               </div>
-              <span className="text-lg font-semibold">{job.category}</span>
-            </div>
-            {/* <div className="flex items-center text-gray-700">
+
+              <div className="flex flex-wrap gap-6 mt-8">
+                <div className="flex items-center text-gray-700">
+                  <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                    <JobTypeIcon className="w-5 h-5 text-[#0086C9]" />
+                  </div>
+                  <span className="text-lg font-semibold">{job.category}</span>
+                </div>
+                {/* <div className="flex items-center text-gray-700">
               <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
                 <Clock className="w-5 h-5 text-[#0086C9]" />
               </div>
               <span className="text-lg font-semibold">{job.type}</span>
             </div> */}
-            <div className="flex items-center text-gray-700">
-              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                <Calendar className="w-5 h-5 text-[#0086C9]" />
-              </div>
-              <span className="text-lg font-semibold">Closing Date: {formatDate(job.closingDate)}</span>
-            </div>
-            <div className="flex items-center text-gray-700">
-              <div className="bg-[#E0F2FE] text-[#0086C9]mr-2 p-2 rounded-full">R</div>
-              <span className="text-lg font-semibold">
-                {job.stipend ? `${job.stipend}` : job.salary ? `${job.salary}` : 'Salary not specified'}
-              </span>
-            </div>
-            <div className="flex items-center text-gray-700">
-              <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                <MapPin className="w-5 h-5 text-[#0086C9]" />
-              </div>
-              <span className="text-lg font-semibold">{job.location}</span>
-            </div>
-            {job.grade && (
-              <div className="flex items-center text-gray-700">
-                <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                  <Building className="w-5 h-5 text-[#0086C9]" />
+                <div className="flex items-center text-gray-700">
+                  <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                    <Calendar className="w-5 h-5 text-[#0086C9]" />
+                  </div>
+                  <span className="text-lg font-semibold">Closing Date: {formatDate(job.closingDate)}</span>
                 </div>
-                <span className="text-lg font-semibold">Grade: {job.grade}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Job Description */}
-        <div className="space-y-8">
-          <section>
-            <h2 className="text-xl font-semibold mb-8">{job.type === 'Learnership' ? 'Program Overview' : 'Introduction'}</h2>
-            <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <div className="text-gray-900 space-y-4">
-              <p>
-                <strong>Posted Date: {formatDate(job.postedDate)}</strong>
-              </p>
-              <p>{job.description}</p>
-              <p>
-                <strong>Post:</strong> {job.title}
-                <br />
-                {job.postNumber && (
-                  <>
-                    <strong>Post Number:</strong> {job.postNumber}
-                    <br />
-                  </>
-                )}
+                <div className="flex items-center text-gray-700">
+                  <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                    <span className="w-5 h-5 text-[#0086C9]">R</span>
+                  </div>
+                  <span className="text-lg font-semibold px-2">
+                    {job.stipend ? `${job.stipend} per anum` : job.salary ? `${job.salary} per anum` : 'Salary not specified'}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                    <MapPin className="w-5 h-5 text-[#0086C9]" />
+                  </div>
+                  <span className="text-lg font-semibold">{job.location}</span>
+                </div>
                 {job.grade && (
-                  <>
-                    <strong>Job Grade:</strong> {job.grade}
-                    <br />
-                  </>
+                  <div className="flex items-center text-gray-700">
+                    <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
+                      <Building className="w-5 h-5 text-[#0086C9]" />
+                    </div>
+                    <span className="text-lg font-semibold">Grade: {job.grade}</span>
+                  </div>
                 )}
-                <strong>(Ref: {job.reference})</strong>
-              </p>
-              <p>
-                <strong>Salary:</strong>{' '}
-                {job.stipend ? `${job.stipend} per annum` : job.salary ? `${job.salary} per annum` : 'Not specified'}
-                <br />
-                <strong>{job.type === 'Learnership' ? 'Location:' : 'Centre:'}</strong> {job.company}, {job.location}
-              </p>
+              </div>
             </div>
-          </section>
 
-          <section>
-            <h2 className="text-lg font-semibold mb-4">{job.type === 'Learnership' ? 'Entry Requirements' : 'Requirements'}</h2>
-            <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <div className="text-gray-900">
-              <ul className="space-y-2">
-                {convertTextToList(job.requirements).map((requirement, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-[#005f33] mr-2 mt-1">•</span>
-                    <span>{requirement}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold mb-4">
-              {job.type === 'Learnership' ? 'Learning Areas & Responsibilities' : 'Duties & Responsibilities'}
-            </h2>
-            <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-            <div className="text-gray-900">
-              <ul className="space-y-2">
-                {convertTextToList(job.responsibilities).map((responsibility, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-[#005f33] mr-2 mt-1">•</span>
-                    <span>{responsibility}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          {/* Enquiries Section */}
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold mb-4">Enquiries</h2>
-            <hr className="mb-6 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
-
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">Need Help or Have Questions?</h3>
-                  <p className="text-gray-600 mb-4">
-                    If you have any questions about this position or need assistance with your application, please don't hesitate to contact
-                    us.
+            {/* Job Description */}
+            <div className="space-y-8">
+              <section>
+                <h2 className="text-xl font-semibold mb-8">{job.type === 'Learnership' ? 'Program Overview' : 'Introduction'}</h2>
+                <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
+                <div className="text-gray-900 space-y-4">
+                  <p>
+                    <strong>Posted Date: {formatDate(job.postedDate)}</strong>
+                  </p>
+                  <p>{job.description}</p>
+                  <p>
+                    <strong>Post:</strong> {job.title}
+                    <br />
+                    {job.postNumber && (
+                      <>
+                        <strong>Post Number:</strong> {job.postNumber}
+                        <br />
+                      </>
+                    )}
+                    {job.grade && (
+                      <>
+                        <strong>Job Grade:</strong> {job.grade}
+                        <br />
+                      </>
+                    )}
+                    <strong>(Ref: {job.reference})</strong>
+                  </p>
+                  <p>
+                    <strong>Salary:</strong>{' '}
+                    {job.stipend ? `${job.stipend} per annum` : job.salary ? `${job.salary} per annum` : 'Not specified'}
+                    <br />
+                    <strong>{job.type === 'Learnership' ? 'Location:' : 'Centre:'}</strong> {job.company}, {job.location}
                   </p>
                 </div>
+              </section>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-gray-800">Log a Case</h4>
-                    <p className="text-sm text-gray-600">
-                      For technical issues, application problems, or general inquiries about this position.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="bg-white border border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white"
-                      onClick={() => window.open('mailto:recruitment@dcs.gov.za?subject=Job Application Enquiry - ' + job.title, '_blank')}
-                    >
-                      Log a Case
-                    </Button>
-                  </div>
+              <section>
+                <h2 className="text-lg font-semibold mb-4">{job.type === 'Learnership' ? 'Entry Requirements' : 'Requirements'}</h2>
+                <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
+                <div className="text-gray-900">
+                  <ul className="space-y-2">
+                    {convertTextToList(job.requirements).map((requirement, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-[#005f33] mr-2 mt-1">•</span>
+                        <span>{requirement}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
 
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-gray-800">Direct Contact</h4>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">
-                        <strong>Email:</strong> recruitment@dcs.gov.za
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <strong>Subject Line:</strong> Job Application Enquiry - {job.title}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <strong>Reference:</strong> {job.reference}
+              <section>
+                <h2 className="text-lg font-semibold mb-4">
+                  {job.type === 'Learnership' ? 'Learning Areas & Responsibilities' : 'Duties & Responsibilities'}
+                </h2>
+                <hr className="mb-8 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
+                <div className="text-gray-900">
+                  <ul className="space-y-2">
+                    {convertTextToList(job.responsibilities).map((responsibility, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-[#005f33] mr-2 mt-1">•</span>
+                        <span>{responsibility}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+
+              {/* Enquiries Section */}
+              <section className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">Enquiries</h2>
+                <hr className="mb-6 bg-[#E4E7EC] text-[#E4E7EC] border border-[#E4E7EC]" />
+
+                <div className="bg-gray-50 rounded-lg ">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-md font-semibold text-gray-800 mb-2">Need Help or Have Questions?</h3>
+                      <p className="text-gray-600 mb-4">
+                        If you have any questions about this position or need assistance with your application, please don't hesitate to
+                        contact us.
                       </p>
                     </div>
-                  </div>
-                </div>
 
-                {/* <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-800">Log a Case</h4>
+                        <p className="text-sm text-gray-600">
+                          For technical issues, application problems, or general inquiries about this position.
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="bg-white border border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white"
+                          onClick={() =>
+                            window.open('mailto:recruitment@dcs.gov.za?subject=Job Application Enquiry - ' + job.title, '_blank')
+                          }
+                        >
+                          Log a Case
+                        </Button>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-800">Direct Contact</h4>
+                        <div className="space-y-2">
+                          <p className="text-sm text-gray-600">
+                            <strong>Email:</strong> recruitment@dcs.gov.za
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <strong>Subject Line:</strong> Job Application Enquiry - {job.title}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <strong>Reference:</strong> {job.reference}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h4 className="font-semibold text-blue-800 mb-2">Important Information</h4>
                   <ul className="text-sm text-blue-700 space-y-1">
                     <li>• Please include the job reference number in your email subject</li>
@@ -976,16 +984,18 @@ const JobDetailPage: React.FC = () => {
                     <li>• Keep your application reference number for tracking</li>
                   </ul>
                 </div> */}
+                  </div>
+                </div>
+              </section>
+
+              <div className="flex justify-between pt-4">
+                <Button variant="outline" onClick={() => navigate('/')} className="bg-[#005f33] border-none text-white w-[180px]">
+                  Back to Jobs
+                </Button>
               </div>
             </div>
-          </section>
-
-          <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={() => navigate('/')} className="bg-[#005f33] border-none text-white w-[180px]">
-              Back to Jobs
-            </Button>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Application Modal */}
@@ -993,15 +1003,15 @@ const JobDetailPage: React.FC = () => {
         <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 bg-white rounded-none">
           {!showSuccess ? (
             <>
-              <DialogHeader className="bg-gray-50 border-b border-gray-200 px-6 py-4">
+              <DialogHeader className=" px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <DialogTitle className="text-2xl font-semibold">Complete Your Application</DialogTitle>
+                  <DialogTitle className="text-xl font-semibold">Complete Your Application</DialogTitle>
                 </div>
 
                 {/* Step Progress Indicator */}
-                <div className="flex items-center justify-center space-x-4 mt-4">
+                <div className="flex items-center justify-center mt-4">
                   {[1, 2, 3].map((step) => (
-                    <div key={step} className="flex items-center">
+                    <div key={step} className="flex items-center ml-0">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
                           step <= currentStep ? 'bg-[#005f33] text-white' : 'bg-gray-200 text-gray-600'
@@ -1009,41 +1019,18 @@ const JobDetailPage: React.FC = () => {
                       >
                         {step}
                       </div>
-                      {step < 3 && <div className={`w-16 h-1 mx-3 ${step < currentStep ? 'bg-[#005f33]' : 'bg-gray-200'}`} />}
+                      {step < 3 && <div className={`w-60 h-[2px]  ${step < currentStep ? 'bg-[#005f33]' : 'bg-gray-200'}`} />}
                     </div>
                   ))}
                 </div>
 
-                <div className="text-center mt-3">
+                {/* <div className="text-center mt-3">
                   <p className="text-lg font-medium text-gray-700">
                     Step {currentStep} of 3:{' '}
                     {currentStep === 1 ? 'Z83 Questions' : currentStep === 2 ? 'Digital Signature' : 'Criteria Questions'}
                   </p>
-                </div>
+                </div> */}
               </DialogHeader>
-
-              {validationErrors.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mx-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">Please complete all required fields</h3>
-                      <p className="text-sm text-red-700 mt-1">
-                        {validationErrors.length} field{validationErrors.length !== 1 ? 's' : ''} still need
-                        {validationErrors.length === 1 ? 's' : ''} to be completed.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <div className="flex-1 overflow-y-auto px-6 py-6">
                 <div className="max-w-4xl mx-auto space-y-6">
@@ -1057,10 +1044,12 @@ const JobDetailPage: React.FC = () => {
                           {hasError('criminalOffence') && <span className="text-red-500">*</span>}
                         </Label>
                         <Select value={criminalOffence || ''} onValueChange={setCriminalOffence}>
-                          <SelectTrigger className={`w-full ${hasError('criminalOffence') ? 'border-red-500 focus:border-red-500' : ''}`}>
+                          <SelectTrigger
+                            className={`w-full bg-white ${hasError('criminalOffence') ? 'border-red-500 focus:border-red-500' : ''}`}
+                          >
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1094,7 +1083,7 @@ const JobDetailPage: React.FC = () => {
                           >
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1128,7 +1117,7 @@ const JobDetailPage: React.FC = () => {
                           >
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1162,7 +1151,7 @@ const JobDetailPage: React.FC = () => {
                           >
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1196,7 +1185,7 @@ const JobDetailPage: React.FC = () => {
                           >
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1216,7 +1205,7 @@ const JobDetailPage: React.FC = () => {
                     <SelectTrigger className={`w-full ${hasError('dischargedOnIllHealth') ? 'border-red-500 focus:border-red-500' : ''}`}>
                       <SelectValue placeholder="Select an option" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className='bg-white'>
                       {getMasterOptions('YesNoId').map((option: any) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.lable}
@@ -1236,7 +1225,7 @@ const JobDetailPage: React.FC = () => {
                           <SelectTrigger className={`w-full ${hasError('businessWithState') ? 'border-red-500 focus:border-red-500' : ''}`}>
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1271,7 +1260,7 @@ const JobDetailPage: React.FC = () => {
                             >
                               <SelectValue placeholder="Select an option" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-white">
                               {getMasterOptions('YesNoId').map((option: any) => (
                                 <SelectItem key={option.value} value={option.value}>
                                   {option.lable}
@@ -1355,7 +1344,7 @@ const JobDetailPage: React.FC = () => {
                           >
                             <SelectValue placeholder="Select a method" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('MethodsOfCommunicating').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1377,7 +1366,7 @@ const JobDetailPage: React.FC = () => {
                           >
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1413,7 +1402,7 @@ const JobDetailPage: React.FC = () => {
                           >
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {getMasterOptions('YesNoId').map((option: any) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.lable}
@@ -1442,19 +1431,6 @@ const JobDetailPage: React.FC = () => {
                   {/* Step 2: Digital Signature */}
                   {currentStep === 2 && (
                     <div className="space-y-6">
-                      {/* Debug info - remove in production */}
-                      {(applicationRef || jobApplicationId) && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-blue-800 mb-2">Application Details</h4>
-                          <p className="text-sm text-blue-700">
-                            <strong>Application Reference:</strong> {applicationRef}
-                          </p>
-                          <p className="text-sm text-blue-700">
-                            <strong>Job Application ID:</strong> {jobApplicationId}
-                          </p>
-                        </div>
-                      )}
-
                       <SignatureCapture signatureData={signatureData} onSignatureChange={setSignatureData} />
                     </div>
                   )}
@@ -1462,19 +1438,6 @@ const JobDetailPage: React.FC = () => {
                   {/* Step 3: Criteria Questions */}
                   {currentStep === 3 && (
                     <div className="space-y-6">
-                      {/* Debug info - remove in production */}
-                      {(applicationRef || jobApplicationId) && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-green-800 mb-2">Application Details</h4>
-                          <p className="text-sm text-green-700">
-                            <strong>Application Reference:</strong> {applicationRef}
-                          </p>
-                          <p className="text-sm text-green-700">
-                            <strong>Job Application ID:</strong> {jobApplicationId}
-                          </p>
-                        </div>
-                      )}
-
                       <div className="text-center">
                         <h3 className="text-lg font-semibold mb-2">Qualifying Criteria</h3>
                         <p className="text-sm text-gray-600 mb-6">Please answer the following questions to complete your application</p>
@@ -1498,7 +1461,7 @@ const JobDetailPage: React.FC = () => {
                               <SelectTrigger className={`w-full ${hasError(question.id) ? 'border-red-500 focus:border-red-500' : ''}`}>
                                 <SelectValue placeholder="Select an option" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-white">
                                 {question.options?.map((option: any) => (
                                   <SelectItem key={option.value || option.id} value={option.value || option.id}>
                                     {option.label || option.text || option.name}
@@ -1525,18 +1488,14 @@ const JobDetailPage: React.FC = () => {
                 </Button>
 
                 <div className="flex space-x-2">
-                  {currentStep > 1 && (
+                  {/* {currentStep > 1 && (
                     <Button variant="outline" onClick={prevStep} className="bg-white border border-gray-300 text-gray-700">
                       Previous
                     </Button>
-                  )}
+                  )} */}
 
                   {currentStep === 1 ? (
-                    <Button 
-                      onClick={handleStepSubmit} 
-                      className="bg-[#005f33] border-none text-white" 
-                      disabled={isSubmitting}
-                    >
+                    <Button onClick={handleStepSubmit} className="bg-[#005f33] border-none text-white" disabled={isSubmitting}>
                       {isSubmitting ? 'Submitting...' : 'Submit'}
                     </Button>
                   ) : currentStep < 3 ? (
@@ -1544,11 +1503,7 @@ const JobDetailPage: React.FC = () => {
                       Next
                     </Button>
                   ) : (
-                    <Button 
-                      onClick={handleStepSubmit} 
-                      className="bg-[#005f33] border-none text-white" 
-                      disabled={isSubmitting}
-                    >
+                    <Button onClick={handleStepSubmit} className="bg-[#005f33] border-none text-white" disabled={isSubmitting}>
                       {isSubmitting ? 'Submitting...' : 'Submit Application'}
                     </Button>
                   )}
@@ -1557,20 +1512,17 @@ const JobDetailPage: React.FC = () => {
             </>
           ) : (
             <>
-              <DialogHeader className="bg-gray-50 border-b border-gray-200 px-6 py-4">
+              <DialogHeader className=" px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <DialogTitle className="text-2xl font-semibold">Application Submitted!</DialogTitle>
-                  <Button variant="ghost" size="sm" onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700">
-                    ✕
-                  </Button>
+                  {/* <DialogTitle className="text-xl font-medium">Application Submitted!</DialogTitle> */}
                 </div>
               </DialogHeader>
 
               <div className="flex-1 overflow-y-auto px-6 py-8">
-                <div className="max-w-4xl mx-auto text-center">
+                <div className="max-w-3xl mx-auto text-center">
                   <div className="flex justify-center mb-6">
-                    <div className="bg-green-100 p-4 rounded-full">
-                      <CheckCircle className="w-16 h-16 text-[#005f33]" />
+                    <div className="border border-gray-100 shadow-sm p-4 rounded-xl">
+                      <CircleCheck className="w-8 h-8 text-[#005f33]" />
                     </div>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">Success!</h3>
@@ -1579,95 +1531,79 @@ const JobDetailPage: React.FC = () => {
                   </p>
 
                   {/* Application Reference Number */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+                  <div className=" rounded-lg p-6 mb-6">
                     <h4 className="text-lg font-semibold text-gray-800 mb-2">Application Reference Number</h4>
-                    <div className="bg-white border border-gray-300 rounded-md p-3 mb-3">
+                    <div className="bg-white rounded-md p-3 mb-3">
                       <code className="text-2xl font-mono font-bold text-[#005f33] tracking-wider">{applicationRef}</code>
                     </div>
                     <p className="text-sm text-gray-600">
                       Please save this reference number for your records. You can use it to track your application status.
                     </p>
-                    {jobApplicationId && (
-                      <div className="mt-3">
-                        <p className="text-sm text-gray-600">
-                          <strong>Job Application ID:</strong> {jobApplicationId}
-                        </p>
-                      </div>
-                    )}
                   </div>
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h4 className="font-semibold text-blue-800 mb-2">What happens next?</h4>
-                    <ul className="text-sm text-blue-700 text-left space-y-1">
-                      <li>• You will receive a confirmation email shortly</li>
-                      <li>• Your application will be reviewed by our HR team</li>
-                      <li>• We'll contact you if you're selected for an interview</li>
-                      <li>• You can track your application status in your dashboard</li>
-                    </ul>
-                  </div>
+                  <Button onClick={handleSuccessOK} className="bg-[#005f33] py-6 hover:bg-[#004d2a] text-white font-semibold px-8 text-lg">
+                    View My Applications
+                  </Button>
                 </div>
               </div>
 
-              <DialogFooter className="bg-gray-50 border-t border-gray-200 px-6 py-4 justify-center">
-                <Button onClick={handleSuccessOK} className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-8 py-3 text-lg">
-                  OK - View My Applications
-                </Button>
-              </DialogFooter>
+              <DialogFooter className=" px-6 py-4 justify-center"></DialogFooter>
             </>
           )}
         </DialogContent>
       </Dialog>
 
       {/* Sticky Apply Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <JobTypeIcon className="w-5 h-5 text-[#0086C9]" />
-                <span className="font-medium text-gray-900">{job.title}</span>
-                {job.postNumber && <span className="text-sm text-gray-500">({job.postNumber})</span>}
-              </div>
-              <div className="text-sm text-gray-600">Closing: {formatDate(job.closingDate)}</div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                className={`${job.isFavorite ? 'text-red-600 border-red-300' : 'text-gray-600 border-gray-300'}`}
-                onClick={handleToggleFavorite}
-                size="sm"
-              >
-                <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600' : ''}`} />
-                {job.isFavorite ? 'Saved' : 'Save'}
-              </Button>
-
-              {!hasApplied ? (
-                <Button
-                  className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
-                  onClick={handleApply}
-                >
-                  Apply Now
-                </Button>
-              ) : (
+      {!isLoading && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 cursor-default" disabled>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Applied
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white font-semibold px-6 py-2"
-                    onClick={handleViewApplication}
-                  >
-                    View Application
-                  </Button>
+                  <JobTypeIcon className="w-5 h-5 text-[#0086C9]" />
+                  <span className="font-medium text-gray-900">{job.title}</span>
+                  {/* {job.postNumber && <span className="text-sm text-gray-500">({job.postNumber})</span>} */}
                 </div>
-              )}
+                <div className="text-sm text-gray-600">Closing: {formatDate(job.closingDate)}</div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
+                  className={`${job.isFavorite ? 'text-red-600 border-red-300' : 'text-gray-600 border-gray-300'}`}
+                  onClick={handleToggleFavorite}
+                  size="sm"
+                >
+                  <Heart className={`w-4 h-4 mr-2 ${job.isFavorite ? 'fill-red-600' : ''}`} />
+                  {job.isFavorite ? 'Saved' : 'Save'}
+                </Button>
+
+                {!hasApplied ? (
+                  <Button
+                    className="bg-[#005f33] hover:bg-[#004d2a] text-white font-semibold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
+                    onClick={handleApply}
+                  >
+                    Apply Now
+                  </Button>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 cursor-default" disabled>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Applied
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-[#005f33] text-[#005f33] hover:bg-[#005f33] hover:text-white font-semibold px-6 py-2"
+                      onClick={handleViewApplication}
+                    >
+                      View Application
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Footer */}
       <Footer />
