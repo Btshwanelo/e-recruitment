@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Mail, RefreshCw } from 'lucide-react';
+import { CircleAlert, Mail, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -40,7 +40,7 @@ const OTPModal = ({
   length = 4,
   title = 'Please check your email.',
   description = `We've sent a code to your email`,
-  icon = <Mail className="h-6 w-6 text-[#FF692E]" />,
+  icon = <CircleAlert className="h-6 w-6 text-[#005f33]" />,
 }: OTPModalProps) => {
   const [otp, setOtp] = useState<string[]>([]);
   const [isValid, setIsValid] = useState(false);
@@ -178,7 +178,7 @@ const OTPModal = ({
       <div className="fixed inset-0 bg-[#6B7280]/40 backdrop-blur-[2px]" aria-hidden="true" />
 
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-[400px] pt-10 rounded-xl">
+        <DialogContent className="max-w-[400px] pt-10 rounded-4xl bg-white">
           {/* {isError && (
             <Alert variant="destructive" className="mb-4 bg-red-50 border-red-200">
               <AlertDescription className="text-red-600 font-medium text-center">{errorMessage}</AlertDescription>
@@ -193,9 +193,9 @@ const OTPModal = ({
           {!isLoading && (
             <>
               <DialogHeader className="text-center">
-                <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-[#FFE6D5] flex items-center justify-center">{icon}</div>
-                <DialogTitle className="text-lg font-semibold text-[#181D27] mb-2 mx-auto">{title}</DialogTitle>
-                <DialogDescription className="text-center text-[#535862] font-normal text-sm">{description}</DialogDescription>
+                <div className="w-12 h-12 rounded-xl border border-[#E1E1E2] items-center flex justify-center">{icon}</div>
+                <DialogTitle className="text-lg font-semibold text-[#181D27] mb-2">{title}</DialogTitle>
+                <DialogDescription className="text-left text-[#535862] font-normal text-sm">{description}</DialogDescription>
               </DialogHeader>
               <div className="flex justify-evenly gap-2">
                 {otp.map((digit, index) => (
@@ -208,13 +208,14 @@ const OTPModal = ({
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={handlePaste}
                     ref={inputRefs[index]}
-                    className="w-14 h-14 text-center text-4xl border-2 border-orange-500 text-[#FF692E]"
+                    placeholder='0'
+                    className="w-14 h-14 text-center placeholder:text-gray-300 placeholder:font-semibold text-4xl font-semibold border border-[#005f33] text-black"
                   />
                 ))}
               </div>
               <div className="flex justify-center items-center gap-2">
                 {timeRemaining > 0 ? (
-                  <span className="text-md text-gray-600">OTP expires in {formatTime(timeRemaining)}</span>
+                  <span className="text-sm text-gray-600">OTP expires in {formatTime(timeRemaining)}</span>
                 ) : (
                   <Button
                     variant="ghost"
@@ -229,8 +230,8 @@ const OTPModal = ({
                 )}
               </div>
               <DialogFooter>
-                <div className="flex w-full gap-3">
-                  <Button variant="outline" className="flex-1" onClick={onClose}>
+                <div className="flex flex-col w-full gap-3">
+                  <Button variant="outline" className="flex-1 bg-white hover:bg-white" onClick={onClose}>
                     Cancel
                   </Button>
                   <Button className="flex-1" variant="default" disabled={!isValid} onClick={handleConfirm}>

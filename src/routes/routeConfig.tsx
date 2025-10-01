@@ -29,22 +29,27 @@ export const publicRoutes = [
   {
     path: '/forgot-password',
     element: <ForgotPasswordPage />,
-    requiresPublicRoute: false,
+    requiresPublicRoute: true,
   },
   {
     path: '/verification',
     element: <OTPNotification />,
-    requiresPublicRoute: false,
+    requiresPublicRoute: true,
   },
   {
     path: '/verification/enter-otp',
     element: <OTPInput />,
-    requiresPublicRoute: false,
+    requiresPublicRoute: true,
   },
   {
     path: '/verification/success',
     element: <VerificationSuccess />,
-    requiresPublicRoute: false,
+    requiresPublicRoute: true,
+  },
+  {
+    path: '/auth',
+    element: <AuthPageV2 />,
+    requiresPublicRoute: true,
   },
 ];
 
@@ -52,18 +57,14 @@ export const publicRoutes = [
 export const protectedRoutes = [
   // Home and main routes
   {
-    path: '/auth',
-    element: <AuthPageV2 />,
-  },
-  {
     path: '/applications',
     element: <ApplicationsListing />,
-    // requiresPublicRoute: false,
+    requiresPublicRoute: false,
   },
   {
     path: '/applications/jobs/:id',
     element: <AppliedJob />,
-    // requiresPublicRoute: false,
+    requiresPublicRoute: false,
   },
   {
     path: '/profile',

@@ -520,7 +520,7 @@ const AuthPageV2 = () => {
                               }
                             }}
                             disabled={!field.value || !!errors.email || isLoadingOTP}
-                            className="px-4 py-2 bg-[#005f33] text-white text-sm font-medium disabled:bg-gray-400"
+                            className="px-4 py-2 bg-[#005f33] h-11 text-white text-sm font-medium disabled:bg-gray-400"
                           >
                             {isLoadingOTP ? 'Sending...' : emailVerified ? 'Verified ✓' : 'Verify'}
                           </Button>
@@ -762,7 +762,6 @@ const AuthPageV2 = () => {
                     )}
                   </Field>
                   <ErrorMessage name="password" component="p" className="mt-1 text-sm text-red-600" />
-                  <p className="mt-1 text-xs text-gray-500">Try test@example.com / Password123!</p>
                 </div>
 
                 <div className="text-right">
