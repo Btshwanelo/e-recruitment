@@ -484,7 +484,7 @@ const ProfileLayout: React.FC = () => {
             city: null,
             provinceId: 0,
             postalCode: null,
-            country: null,
+            countryId: null,
           },
           qualifications: {
             qualificationName: null,

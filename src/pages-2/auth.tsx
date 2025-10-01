@@ -422,7 +422,7 @@ const AuthPageV2 = () => {
   return (
     <div className="min-h-screen relative flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="absolute bg-inherit hover:bg-white top-6 right-6 cursor-pointer" onClick={() => navigate('/')}>
-        <X size={35} className="font-semibold text-[#095C37]" />
+        <X size={30} className="font-semibold text-[#095C37]" />
       </div>
       {/* Logo */}
       <div className="mb-2">

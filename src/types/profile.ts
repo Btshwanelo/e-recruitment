@@ -80,9 +80,9 @@ export interface ContactFormData {
   alternativeNumber: string;
   streetAddress: string;
   city: string;
-  province: string;
+  provinceId: string;
   postalCode: string;
-  country: string;
+  countryId: string;
 }
 
 // Default empty form data

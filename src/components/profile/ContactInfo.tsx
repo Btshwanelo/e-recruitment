@@ -86,7 +86,7 @@ const ContactInfo: React.FC<ContactInfoProps> = ({ formData, onFormDataChange, g
               </div>
               <div className="space-y-2">
                 <Label htmlFor="province">Province</Label>
-                <Select value={formData.province} onValueChange={(value) => onFormDataChange({ ...formData, province: value })}>
+                <Select value={formData.provinceId} onValueChange={(value) => onFormDataChange({ ...formData, provinceId: value })}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select province" />
                   </SelectTrigger>
@@ -112,7 +112,7 @@ const ContactInfo: React.FC<ContactInfoProps> = ({ formData, onFormDataChange, g
               </div>
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>
-                <Select value={formData.province} onValueChange={(value) => onFormDataChange({ ...formData, province: value })}>
+                <Select value={formData.countryId} onValueChange={(value) => onFormDataChange({ ...formData, countryId: value })}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select country" />
                   </SelectTrigger>
