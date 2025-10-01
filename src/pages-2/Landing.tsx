@@ -374,11 +374,11 @@ const JobOpeningsPage = () => {
                       <table className="w-full min-w-full">
                         <thead className="bg-gray-50 border-b border-[#E4E7EC]">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Details</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Closing Date</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3 max-w-xs">Job Details</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Location</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Type</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Closing Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-[#E4E7EC]">
@@ -386,28 +386,28 @@ const JobOpeningsPage = () => {
                             const displayJob = formatJobForDisplay(job);
                             return (
                               <tr key={job.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4">
-                                  <div>
-                                    <div className="text-sm text-[#005f33] font-bold">{displayJob.id}</div>
-                                    <div className="text-lg font-semibold text-[#101828] mb-1">{displayJob.title}</div>
+                                <td className="px-6 py-4 w-1/3 max-w-xs">
+                                  <div className="truncate">
+                                    <div className="text-sm text-[#005f33] font-bold truncate">{displayJob.id}</div>
+                                    <div className="text-lg font-semibold text-[#101828] mb-1 truncate" title={displayJob.title}>{displayJob.title}</div>
                                     <div className="text-sm text-[#475467] line-clamp-2">{displayJob.description}</div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 w-1/6">
                                   <div className="flex items-center text-sm text-gray-500">
                                     <MapPin className="w-4 h-4 mr-1" />
-                                    {displayJob.location}
+                                    <span className="truncate">{displayJob.location}</span>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 w-1/6">
                                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{displayJob.type}</span>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 w-1/6">
                                   <span className="text-sm text-gray-500">
                                     {new Date(displayJob.closingDate).toLocaleDateString('en-GB')}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 w-1/6">
                                   <div className="flex items-center gap-2">
                                     <Button
                                       size="sm"
