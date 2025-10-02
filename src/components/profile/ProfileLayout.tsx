@@ -29,7 +29,6 @@ import { showSuccessToast } from '../SuccessToast';
 import { showErrorToast } from '../ErrorToast ';
 import Footer from '../Footer';
 
-
 const ProfileLayout: React.FC = () => {
   // Get profile data from Redux store
   const profileData = useSelector((state: RootState) => state.profile.profileDetails);
@@ -114,9 +113,9 @@ const ProfileLayout: React.FC = () => {
       alternativeNumber: profileData.applicantDetails?.contactInfo?.alternativeNumber || defaultContactInfo.alternativeNumber,
       streetAddress: profileData.applicantDetails?.contactInfo?.streetAddress || defaultContactInfo.streetAddress,
       city: profileData.applicantDetails?.contactInfo?.city || defaultContactInfo.city,
-      province: profileData.applicantDetails?.contactInfo?.provinceId?.toString() || defaultContactInfo.province,
+      province: profileData.applicantDetails?.contactInfo?.provinceId?.toString() || defaultContactInfo.provinceId,
       postalCode: profileData.applicantDetails?.contactInfo?.postalCode || defaultContactInfo.postalCode,
-      country: profileData.applicantDetails?.contactInfo?.country || defaultContactInfo.country,
+      country: profileData.applicantDetails?.contactInfo?.country || defaultContactInfo.countryId,
     };
 
     return { personalData, contactData };
@@ -510,7 +509,7 @@ const ProfileLayout: React.FC = () => {
           ...currentApplicantDetails.personalInfo,
           firstName: stepData.FirstName || currentApplicantDetails.personalInfo.firstName,
           lastName: stepData.LastName || currentApplicantDetails.personalInfo.lastName,
-          initial: stepData.Initial || currentApplicantDetails.personalInfo.initial,
+          initials: stepData.Initial || currentApplicantDetails.personalInfo.initial,
           idNumber: stepData.IdNumber || currentApplicantDetails.personalInfo.idNumber,
           age: stepData.Age ? parseInt(stepData.Age) : currentApplicantDetails.personalInfo.age,
           dateOfBirth: stepData.DateOfBirth || currentApplicantDetails.personalInfo.dateOfBirth,
@@ -646,7 +645,7 @@ const ProfileLayout: React.FC = () => {
 
         const updatedQualifications = {
           ...currentQualApplicantDetails.qualifications,
-          qualificationName: stepData.QualificationName || currentQualApplicantDetails.qualifications.qualificationName,
+          qualification: stepData.QualificationName || currentQualApplicantDetails.qualifications.qualificationName,
           institution: stepData.Institution || currentQualApplicantDetails.qualifications.institution,
           yearObtained: stepData.YearObtained ? parseInt(stepData.YearObtained) : currentQualApplicantDetails.qualifications.yearObtained,
         };
@@ -798,10 +797,10 @@ const ProfileLayout: React.FC = () => {
       RaceId: personalFormData.race,
       Age: personalFormData.age,
       DateOfBirth: personalFormData.dateOfBirth,
-      Initial: personalFormData.initial,
+      Initials: personalFormData.initial,
       PassportNumber: personalFormData.passportNumber,
       RightToWorkStatusId: personalFormData.rightToWork,
-      DisabilityStatusId: personalFormData.disabilityStatus,
+      Disabled: personalFormData.disabilityStatus || '637',
       Mobile: contactFormData.mobileNumber,
       AlternativeNumber: contactFormData.alternativeNumber,
     };
@@ -812,7 +811,7 @@ const ProfileLayout: React.FC = () => {
 
     // Add Language array if we have languages
     if (personalFormData.languages.length > 0) {
-      result.Language = personalFormData.languages.map(lang => ({
+      result.Language = personalFormData.languages.map((lang) => ({
         LanguageId: lang.language,
         SpeakingProficiencyId: parseInt(lang.speakingProficiency) || 0,
         ReadOrWriteProficiencyId: parseInt(lang.readWriteProficiency) || 0,
@@ -821,9 +820,9 @@ const ProfileLayout: React.FC = () => {
 
     // Add WorkExperience array if we have work experience
     if (personalFormData.workExperience.length > 0) {
-      result.WorkExperience = personalFormData.workExperience.map(work => ({
-        CompanyName: work.companyName,
-        Position: work.position,
+      result.WorkExperience = personalFormData.workExperience.map((work) => ({
+        Name: work.companyName,
+        PostHeld: work.position,
         FromDate: work.fromDate ? new Date(work.fromDate).toISOString() : '',
         ToDate: work.toDate ? new Date(work.toDate).toISOString() : '',
         ReasonForLeaving: work.reasonForLeaving,
@@ -832,8 +831,8 @@ const ProfileLayout: React.FC = () => {
 
     // Add Qualification array if we have qualifications
     if (personalFormData.qualifications.length > 0) {
-      result.Qualification = personalFormData.qualifications.map(qual => ({
-        QualificationName: qual.qualification,
+      result.Qualification = personalFormData.qualifications.map((qual) => ({
+        QualificationTypeId: qual.qualification,
         Institution: qual.institution,
         YearObtained: parseInt(qual.yearObtained) || 0,
       }));
@@ -841,13 +840,15 @@ const ProfileLayout: React.FC = () => {
 
     // Add Address array if we have contact info
     if (contactFormData.streetAddress || contactFormData.city) {
-      result.Address = [{
-        StreetAddress: contactFormData.streetAddress,
-        City: contactFormData.city,
-        Province: parseInt(contactFormData.province) || 0,
-        PostalCode: contactFormData.postalCode,
-        Country: contactFormData.country,
-      }];
+      result.Address = [
+        {
+          StreetName: contactFormData.streetAddress,
+          City: contactFormData.city,
+          Province: parseInt(contactFormData.provinceId) || 0,
+          PostalCode: contactFormData.postalCode,
+          Country: contactFormData.countryId,
+        },
+      ];
     }
 
     return result;
@@ -885,7 +886,7 @@ const ProfileLayout: React.FC = () => {
       console.log(`Validation for ${activeTab} step:`, isValid);
       console.log('CV File:', cvFile);
       console.log('ID Document:', idDocument);
-      
+
       if (!isValid) {
         setError(`Please fill in all required fields for the ${activeTab} step`);
         showErrorToast(`Please fill in all required fields for the ${activeTab} step`);

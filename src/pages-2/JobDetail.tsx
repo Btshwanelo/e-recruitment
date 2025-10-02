@@ -32,6 +32,7 @@ import {
 } from '@/slices/services';
 import Loader from '@/components/Loader';
 import { showSuccessToast } from '@/components/SuccessToast';
+import useAuth from '@/hooks/useAuth';
 
 // Signature Capture Component
 const SignatureCapture: React.FC<{
@@ -201,7 +202,7 @@ const JobDetailPage: React.FC = () => {
         body: {
           entityName: 'JobApplication',
           requestName: 'UpsertRegEricruit',
-          RecordId: jobApplicationId || 'ebbcaf09-33d0-490b-a740-8602fab0dc0b', // Use job application ID from Z83 response
+          RecordId: jobApplicationId, // Use job application ID from Z83 response
           inputParamters: {
             Entity: {},
             SkillMetrics: skillMetrics,
@@ -363,9 +364,10 @@ const JobDetailPage: React.FC = () => {
   const [lastPublicServicePosition, setLastPublicServicePosition] = useState('');
 
   // For now, we'll use a mock job ID since we're getting data from API
-  const mockJobId = jobId || 'c2a165e8-f48c-416f-8949-4851385954e2';
+  const mockJobId = jobId;
   const hasApplied = useSelector((state: any) => selectHasApplied(state, mockJobId));
   const application = useSelector((state: any) => selectApplicationByJobId(state, mockJobId));
+  const authDetails = useAuth();
 
   // Create a job object from API data for compatibility
   const job = jobData
@@ -533,8 +535,8 @@ const JobDetailPage: React.FC = () => {
             BusinessWithStateDetails: businessWithState === '636' ? businessWithStateDetails : '',
             PublicServiceBackground: publicServiceBackground,
             LastPublicServicePosition: publicServiceBackground === '636' ? lastPublicServicePosition : '',
-            JobApplicantId: '6163C42B-16E3-466E-B356-60928E7912B2', // This should come from auth context
-            JobVacencyId: jobId || '8F8CD5B5-C20D-4B27-9AE4-01780064FD36',
+            JobApplicantId: authDetails.user.relatedObjectId, // This should come from auth context
+            JobVacencyId: jobId,
           },
         },
       };

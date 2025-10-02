@@ -323,14 +323,10 @@ const SavedJobs: React.FC = () => {
           <Card className="border border-[#D0D5DD] bg-white text-center py-12">
             <CardContent>
               <div className="max-w-md mx-auto">
-                <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Jobs Available</h3>
+s                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Jobs Available</h3>
                 <p className="text-gray-600 mb-6">
                   There are currently no job openings available. Please check back later for new opportunities.
                 </p>
-                <Button className="bg-[#0086C9] hover:bg-[#0086C9]" onClick={() => window.location.reload()}>
-                  Refresh Page
-                </Button>
               </div>
             </CardContent>
           </Card>

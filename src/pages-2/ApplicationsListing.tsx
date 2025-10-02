@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,8 @@ import { selectApplications, selectJobById, updateApplicationStatus } from '@/sl
 import HeaderV2 from './Header';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
+import { useExecuteRequest1Mutation } from '@/slices/services';
+import useAuth from '@/hooks/useAuth';
 
 // Mock table components since they're not available
 const Table = ({ children, className }: { children: React.ReactNode; className?: string }) => (
@@ -45,6 +47,18 @@ const TableCell = ({ children, className }: { children: React.ReactNode; classNa
 const ApplicationsListing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const dispatch = useDispatch();
+
+  const authDetails = useAuth();
+  const [getJobs] = useExecuteRequest1Mutation();
+
+  // useEffect(() => {
+  //   getJobs({
+  //     body: {
+  //       requestName: 'RetrieveCandicateApplicationAPI',
+  //       RecordId: authDetails.user.relatedObjectId,
+  //     },
+  //   });
+  // }, []);
 
   // Mock navigate function
   const navigate = useNavigate();

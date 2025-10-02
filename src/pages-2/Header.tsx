@@ -22,7 +22,7 @@ const HeaderV2 = () => {
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo on the left */}
         <div className="flex items-center">
-          <div className="w-20 h-14 rounded flex items-center justify-center">
+          <div onClick={() => navigate('/')} className="w-20 h-14 cursor-pointer rounded flex items-center justify-center">
             <img src="/dcs-logo.png" alt="EZRA Logo" className="w-24 h-auto" />
           </div>
         </div>
@@ -49,10 +49,10 @@ const HeaderV2 = () => {
                   <User className="w-4 h-4" />
                   <span>My Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/saved-jobs')} className="flex items-center space-x-2 cursor-pointer">
+                {/* <DropdownMenuItem onClick={() => navigate('/saved-jobs')} className="flex items-center space-x-2 cursor-pointer">
                   <Bookmark className="w-4 h-4" />
                   <span>My Saved Jobs</span>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem onClick={() => navigate('/applications')} className="flex items-center space-x-2 cursor-pointer">
                   <FileText className="w-4 h-4" />
                   <span>Applied Jobs</span>
