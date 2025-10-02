@@ -13,6 +13,7 @@ import {
   RotateCcw,
   CheckCheck,
   CircleCheck,
+  BadgePlus,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -33,6 +34,7 @@ import {
 import Loader from '@/components/Loader';
 import { showSuccessToast } from '@/components/SuccessToast';
 import useAuth from '@/hooks/useAuth';
+import { formatNumber } from '@/lib/utils';
 
 // Signature Capture Component
 const SignatureCapture: React.FC<{
@@ -846,10 +848,10 @@ const JobDetailPage: React.FC = () => {
                 </div>
                 <div className="flex items-center text-gray-700">
                   <div className="bg-[#E0F2FE] mr-2 p-2 rounded-full">
-                    <span className="w-5 h-5 text-[#0086C9]">R</span>
+                  <BadgePlus className="w-5 h-5 text-[#0086C9]" />
                   </div>
                   <span className="text-lg font-semibold px-2">
-                    {job.stipend ? `${job.stipend} per anum` : job.salary ? `${job.salary} per anum` : 'Salary not specified'}
+                    {job.stipend ? `R ${formatNumber(job.stipend)} per annum` : job.salary ? `R ${formatNumber(job.salary)} per annum` : 'Salary not specified'}
                   </span>
                 </div>
                 <div className="flex items-center text-gray-700">
@@ -898,7 +900,7 @@ const JobDetailPage: React.FC = () => {
                   </p>
                   <p>
                     <strong>Salary:</strong>{' '}
-                    {job.stipend ? `${job.stipend} per annum` : job.salary ? `${job.salary} per annum` : 'Not specified'}
+                    {job.stipend ? `R ${formatNumber(job.stipend)} per annum` : job.salary ? `R ${formatNumber(job.salary)} per annum` : 'Not specified'}
                     <br />
                     <strong>{job.type === 'Learnership' ? 'Location:' : 'Centre:'}</strong> {job.company}, {job.location}
                   </p>
