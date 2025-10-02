@@ -1026,12 +1026,11 @@ const JobDetailPage: React.FC = () => {
                   ))}
                 </div>
 
-                {/* <div className="text-center mt-3">
+                <div className="text-center mt-3">
                   <p className="text-lg font-medium text-gray-700">
-                    Step {currentStep} of 3:{' '}
                     {currentStep === 1 ? 'Z83 Questions' : currentStep === 2 ? 'Digital Signature' : 'Criteria Questions'}
                   </p>
-                </div> */}
+                </div>
               </DialogHeader>
 
               <div className="flex-1 overflow-y-auto px-6 py-6">
