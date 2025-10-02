@@ -431,6 +431,14 @@ const JobDetailPage: React.FC = () => {
   }
 
   const handleApply = () => {
+    // Check if user is authenticated
+    if (!authDetails.isAuthenticated) {
+      // Redirect to login page if not authenticated
+      navigate('/auth');
+      return;
+    }
+    
+    // Open application modal if authenticated
     setIsModalOpen(true);
   };
 
