@@ -11,7 +11,6 @@ import {
   Heart,
   Loader2,
   RotateCcw,
-  CheckCheck,
   CircleCheck,
   BadgePlus,
 } from 'lucide-react';
@@ -366,7 +365,7 @@ const JobDetailPage: React.FC = () => {
   const [lastPublicServicePosition, setLastPublicServicePosition] = useState('');
 
   // For now, we'll use a mock job ID since we're getting data from API
-  const mockJobId = jobId;
+  const mockJobId = jobId || '';
   const hasApplied = useSelector((state: any) => selectHasApplied(state, mockJobId));
   const application = useSelector((state: any) => selectApplicationByJobId(state, mockJobId));
   const authDetails = useAuth();
@@ -374,7 +373,7 @@ const JobDetailPage: React.FC = () => {
   // Create a job object from API data for compatibility
   const job = jobData
     ? {
-        id: mockJobId,
+        id: jobId || '',
         title: jobData['Job Vacancy']?.name || '',
         postNumber: jobData['Job Vacancy']?.postNumber || '',
         type: jobData['Job Vacancy']?.employmentType || '',
@@ -417,8 +416,21 @@ const JobDetailPage: React.FC = () => {
     );
   }
 
-  // Job not found state
-  if (!job) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#005f33]" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Loading Job Details...</h2>
+          <p className="text-gray-600">Please wait while we fetch the job information.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Job not found state (only show after loading is complete)
+  if (!job && !isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -430,6 +442,11 @@ const JobDetailPage: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // If we reach here, job should be defined, but add a safety check
+  if (!job) {
+    return null;
   }
 
   const handleApply = () => {
