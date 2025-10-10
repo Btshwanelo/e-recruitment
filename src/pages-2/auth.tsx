@@ -83,6 +83,8 @@ const AuthPageV2 = () => {
         },
       }).unwrap();
 
+      console.log('Login Response:', loginResponse);
+
       // Save auth data to Redux store
       dispatch(
         setAuthData({
@@ -194,6 +196,7 @@ const AuthPageV2 = () => {
         navigate('/profile');
       }
     } catch (error) {
+      console.log('error : login',error);
       setApiErrors({ auth: 'Login failed. Please check your credentials.' });
     } finally {
       setIsLoading(false);
@@ -282,6 +285,8 @@ const AuthPageV2 = () => {
           },
         },
       }).unwrap();
+
+      console.log('User registration successful',);
 
       // Step 2: Automatically login the user after successful registration
       const loginResponse = await userLogin({
@@ -380,6 +385,8 @@ const AuthPageV2 = () => {
             })
           );
 
+
+
           // Step 6: Navigate based on profile completion status
           if (response.isProfileComplete) {
             navigate(redirectPath);
@@ -387,6 +394,7 @@ const AuthPageV2 = () => {
             navigate('/profile');
           }
         } else {
+          console.log('User registration successful but profile response structure mismatch',profileResponse);
           // Fallback navigation if response structure doesn't match
           console.log('Signup profile response structure mismatch, using fallback navigation');
           navigate('/profile');
@@ -397,7 +405,8 @@ const AuthPageV2 = () => {
         navigate('/profile');
       }
     } catch (error) {
-      setApiErrors({ signup: 'Registration failed. Please try again.' });
+      console.log('error : signup',error);
+      setApiErrors({ signup: error?.data });
     } finally {
       setIsLoading(false);
     }
