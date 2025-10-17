@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ContactFormData } from '@/types/profile';
+import GoogleAddressInput from '@/components/GoogleAddressInput';
 
 interface ContactInfoProps {
   formData: ContactFormData;
@@ -64,11 +65,11 @@ const ContactInfo: React.FC<ContactInfoProps> = ({ formData, onFormDataChange, g
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="streetAddress">Street Address</Label>
-                <Input
+                <GoogleAddressInput
                   id="streetAddress"
                   name="streetAddress"
                   value={formData.streetAddress}
-                  onChange={handleContactChange}
+                  onChange={(value) => onFormDataChange({ ...formData, streetAddress: value })}
                   placeholder="Enter your street address"
                   className="w-full"
                 />
