@@ -931,7 +931,6 @@ const JobDetailPage: React.FC = () => {
                   <ul className="space-y-2">
                     {convertTextToList(job.requirements).map((requirement, index) => (
                       <li key={index} className="flex items-start">
-                        <span className="text-[#005f33] mr-2 mt-1">•</span>
                         <span>{requirement}</span>
                       </li>
                     ))}
@@ -948,7 +947,6 @@ const JobDetailPage: React.FC = () => {
                   <ul className="space-y-2">
                     {convertTextToList(job.responsibilities).map((responsibility, index) => (
                       <li key={index} className="flex items-start">
-                        <span className="text-[#005f33] mr-2 mt-1">•</span>
                         <span>{responsibility}</span>
                       </li>
                     ))}

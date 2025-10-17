@@ -404,9 +404,9 @@ const AuthPageV2 = () => {
         console.log('Signup profile response status not 200, using fallback navigation');
         navigate('/profile');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('error : signup',error);
-      setApiErrors({ signup: error?.data });
+      setApiErrors({ signup: error?.data || 'Signup failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -429,16 +429,30 @@ const AuthPageV2 = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="absolute bg-inherit hover:bg-white top-6 right-6 cursor-pointer" onClick={() => navigate('/')}>
-        <X size={30} className="font-semibold text-[#095C37]" />
-      </div>
-      {/* Logo */}
-      <div className="mb-2">
-        <img src="/dcs-logo.png" alt="RHS Services Logo" className="h-20" />
+    <div className="min-h-screen flex bg-white">
+      {/* Left Column - Image Banner */}
+      <div className="hidden lg:flex lg:w-1/2 relative">
+        <img 
+          src="/images/dash-bg-CJMfvv6V.jpg" 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+        {/* Green overlay to match brand colors */}
+        <div className="absolute inset-0 bg-[#005f33] bg-opacity-40"></div>
       </div>
 
-      <div className="w-full max-w-md">
+      {/* Right Column - Form */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+        <div className="absolute top-6 right-6 cursor-pointer" onClick={() => navigate('/')}>
+          <X size={30} className="font-semibold text-[#095C37]" />
+        </div>
+        
+        {/* Logo */}
+        <div className="mb-2">
+          <img src="/dcs-logo.png" alt="RHS Services Logo" className="h-20" />
+        </div>
+
+        <div className="w-full max-w-md">
         {/* Heading */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-semibold text-gray-900">
@@ -820,6 +834,7 @@ const AuthPageV2 = () => {
             </button>
           </div>
         </div>
+        </div>
       </div>
 
       {otpModalOpen && (
@@ -827,12 +842,12 @@ const AuthPageV2 = () => {
           isOpen={otpModalOpen}
           onClose={() => setOtpModalOpen(false)}
           onConfirm={handleVerifyOTP}
-          onNewOtp={handleRequestOTP}
+          onNewOtp={() => handleRequestOTP(pendingEmail)}
           length={4}
           isLoading={isLoadingOTP}
           isLoadingSubmit={isLoadingConfirm}
           isError={isErrorConfirmOTP}
-          errorMessage={errorConfirmOTP?.data || 'Incorrect OTP'}
+          errorMessage={(errorConfirmOTP as any)?.data || 'Incorrect OTP'}
           data-testid="signup-otp-modal"
           title="Please check your email"
           description={`We've sent a code to your email`}
